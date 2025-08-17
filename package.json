@@ -1,7 +1,7 @@
 {
-  "name": "vite-react",
+  "name": "cbrverse",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -10,6 +10,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@types/jquery": "^3.5.32",
+    "bootstrap": "^5.3.7",
+    "jquery": "^3.7.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
