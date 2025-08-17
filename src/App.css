@@ -1,6 +1,4 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
-}
+/* App.css - Estilos específicos del componente App migrados a Tailwind CSS */
+
+/* Este archivo ya no es necesario ya que migramos a Tailwind CSS */
+/* Los estilos se encuentran ahora en index.css como clases de Tailwind */
