@@ -20,6 +20,7 @@ const App: React.FC = () => {
   const [comicName, setComicName] = useState<string>("");
   const [cascadeMode, setCascadeMode] = useState<boolean>(false);
   const [showConfigMenu, setShowConfigMenu] = useState<boolean>(false);
+  const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
 
@@ -153,6 +154,16 @@ const App: React.FC = () => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showConfigMenu]);
+
+  // Detectar cambios en el modo pantalla completa
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
 
   const setupDragAndDrop = () => {
     const $document = $(document);
@@ -308,6 +319,22 @@ const App: React.FC = () => {
     setShowConfigMenu(prev => !prev);
   };
 
+  const toggleFullscreen = () => {
+    setShowConfigMenu(false); // Cerrar el menú al seleccionar una opción
+    
+    if (!document.fullscreenElement) {
+      // Entrar en pantalla completa
+      document.documentElement.requestFullscreen().catch(err => {
+        console.error('Error al intentar entrar en pantalla completa:', err);
+      });
+    } else {
+      // Salir de pantalla completa
+      document.exitFullscreen().catch(err => {
+        console.error('Error al intentar salir de pantalla completa:', err);
+      });
+    }
+  };
+
   const closeComic = () => {
     setImages([]);
     setCurrentPanel(0);
@@ -438,6 +465,27 @@ const App: React.FC = () => {
                     </div>
                     <div className="config-item-status">
                       {cascadeMode ? 'Activar' : 'Activar'}
+                    </div>
+                  </div>
+
+                  {/* Opción de pantalla completa */}
+                  <div className="config-dropdown-item" onClick={toggleFullscreen}>
+                    <div className="config-item-icon">
+                      <i className={`bi bi-${isFullscreen ? 'fullscreen-exit' : 'arrows-fullscreen'}`}></i>
+                    </div>
+                    <div className="config-item-content">
+                      <div className="config-item-title">
+                        {isFullscreen ? 'Salir de Pantalla Completa' : 'Pantalla Completa'}
+                      </div>
+                      <div className="config-item-desc">
+                        {isFullscreen 
+                          ? 'Volver al modo ventana normal' 
+                          : 'Expandir a pantalla completa'
+                        }
+                      </div>
+                    </div>
+                    <div className="config-item-status">
+                      {isFullscreen ? 'Salir' : 'Activar'}
                     </div>
                   </div>
 
