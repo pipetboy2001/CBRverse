@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import $ from 'jquery';
+import { usePDFProcessor } from './usePDFProcessor';
+import { FileType } from '../types';
 
 export const useComicReader = () => {
   const [images, setImages] = useState<string[]>([]);
@@ -8,14 +10,14 @@ export const useComicReader = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [loadingProgress, setLoadingProgress] = useState<number>(0);
   const [showButtons, setShowButtons] = useState<boolean>(false);
+  const [fileType, setFileType] = useState<FileType | undefined>(undefined);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { processPDFFile } = usePDFProcessor();
 
-  // Initialize external scripts
   useEffect(() => {
     const loadExternalScripts = async () => {
       try {
-        // Check if scripts are already loaded to avoid duplicates
         if (window.JSZip && window.loadArchiveFormats) {
           setupDragAndDrop();
           return;
@@ -23,7 +25,6 @@ export const useComicReader = () => {
 
         if (!window.JSZip) {
           await new Promise((resolve, reject) => {
-            // Check if script already exists
             const existingScript = document.querySelector('script[src="/lib/jszip.js"]');
             if (existingScript) {
               resolve(undefined);
@@ -40,7 +41,6 @@ export const useComicReader = () => {
 
         if (!window.loadArchiveFormats) {
           await new Promise((resolve, reject) => {
-            // Check if script already exists
             const existingScript = document.querySelector('script[src="/lib/uncompress.js"]');
             if (existingScript) {
               resolve(undefined);
@@ -57,7 +57,6 @@ export const useComicReader = () => {
 
         if (window.loadArchiveFormats) {
           window.loadArchiveFormats(['rar', 'zip'], () => {
-            console.log('Archive formats loaded');
             setupDragAndDrop();
           });
         }
@@ -118,12 +117,11 @@ export const useComicReader = () => {
   };
 
   const handleFile = (file: File) => {
-    console.log('try to parse ' + file.name);
-
-    // Extraer nombre del archivo sin extensión
-    const fileName = file.name.replace(/\.(cbr|cbz|zip|rar)$/i, '');
+    const fileExtension = file.name.split('.').pop()?.toLowerCase() as FileType;
+    const fileName = file.name.replace(/\.(cbr|cbz|zip|rar|pdf)$/i, '');
+    
     setComicName(fileName);
-
+    setFileType(fileExtension);
     setImages([]);
     setCurrentPanel(0);
     setShowButtons(false);
@@ -132,11 +130,30 @@ export const useComicReader = () => {
 
     $("#comicImg").attr("src", "");
 
+    if (fileExtension === 'pdf') {
+      processPDFFile(
+        file,
+        (progress) => {
+          setLoadingProgress(progress);
+        },
+        (images) => {
+          setImages(images);
+          setIsLoading(false);
+          setShowButtons(true);
+          drawPanel(0, images);
+        },
+        (error) => {
+          console.error('PDF processing error:', error);
+          doError(`Error al procesar PDF: ${error}`);
+          setIsLoading(false);
+        }
+      );
+      return;
+    }
+
     if (window.archiveOpenFile) {
       window.archiveOpenFile(file, null, (archive: any, err: any) => {
         if (archive) {
-          console.info('Uncompressing ' + archive.archive_type + ' ...');
-          
           const imageArchive = archive.entries.filter((e: any) => e.is_file);
           const newImages: string[] = [];
           let processedCount = 0;
@@ -189,6 +206,7 @@ export const useComicReader = () => {
     setCurrentPanel(0);
     setShowButtons(false);
     setComicName("");
+    setFileType(undefined);
     setIsLoading(false);
     setLoadingProgress(0);
     $("#comicImg").attr("src", "");
@@ -221,16 +239,14 @@ export const useComicReader = () => {
   };
 
   return {
-    // State
     images,
     currentPanel,
     comicName,
+    fileType,
     isLoading,
     loadingProgress,
     showButtons,
     fileInputRef,
-    
-    // Actions
     handleFile,
     handleFilesChange,
     triggerFileInput,

@@ -13,6 +13,7 @@ export const ComicReaderPage: React.FC = () => {
     images,
     currentPanel,
     comicName,
+    fileType,
     isLoading,
     loadingProgress,
     showButtons,
@@ -106,6 +107,7 @@ export const ComicReaderPage: React.FC = () => {
       images={images}
       currentPanel={currentPanel}
       comicName={comicName}
+      fileType={fileType}
       isLoading={isLoading}
       loadingProgress={loadingProgress}
       showButtons={showButtons}
