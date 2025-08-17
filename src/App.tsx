@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import $ from "jquery";
 import "bootstrap/dist/css/bootstrap.min.css";
-import "./comic-viewer.css";
+import "bootstrap-icons/font/bootstrap-icons.css";
 
 declare global {
   interface Window {
@@ -184,8 +184,8 @@ const App: React.FC = () => {
   const drawPanel = (num: number, imageArray: string[] = images) => {
     setCurrentPanel(num);
     $("#comicImg").attr("src", imageArray[num]);
-    $("#panelCount").html(`Panel ${num + 1} out of ${imageArray.length}`);
-    $("#panelCount1").html(`Panel ${num + 1} out of ${imageArray.length}`);
+    $("#panelCount").html(`Página ${num + 1} de ${imageArray.length}`);
+    $("#panelCount1").html(`Página ${num + 1} de ${imageArray.length}`);
   };
 
   const prevPanel = () => {
@@ -221,24 +221,28 @@ const App: React.FC = () => {
     return (
       <div className="welcome-screen">
         <div className="welcome-container">
-          <div className="book-icon">
+          <div style={{ fontSize: '3rem', marginBottom: '1rem', display: 'block', filter: 'drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2))' }}>
             📖
           </div>
-          <h1 className="welcome-title">CBRVerse</h1>
-          <p className="welcome-subtitle">
+          <h1 className="text-shadow-lg" style={{ fontSize: '2.5rem', fontWeight: 'bold', margin: '0 0 1rem 0', color: 'white' }}>
+            CBRVerse
+          </h1>
+          <p className="text-shadow-sm" style={{ fontSize: '1rem', marginBottom: '1.5rem', opacity: 0.9 }}>
             Arrastra tu cómic o selecciona un archivo para empezar
           </p>
           
           <div className="upload-section">
-            <div className="upload-icon">
+            <div style={{ fontSize: '2rem', marginBottom: '1rem', opacity: 0.8 }}>
               ⬆️
             </div>
-            <h2 className="upload-title">Selecciona tu cómic</h2>
-            <p className="upload-description">
+            <h2 className="text-shadow-sm" style={{ fontSize: '1.5rem', fontWeight: '600', margin: '0 0 0.5rem 0' }}>
+              Selecciona tu cómic
+            </h2>
+            <p style={{ fontSize: '0.9rem', marginBottom: '1.5rem', opacity: 0.8 }}>
               Soportamos archivos CBR, CBZ y PDF
             </p>
             
-            <button className="upload-button" onClick={triggerFileInput}>
+            <button className="btn-upload" onClick={triggerFileInput}>
               Examinar archivos
             </button>
             
@@ -250,8 +254,14 @@ const App: React.FC = () => {
               style={{ display: 'none' }}
             />
             
-            <div className="tip-section">
-              💡 <span className="tip-text">También puedes arrastrar archivos CBR/CBZ directamente aquí</span>
+            <div style={{ 
+              padding: '0.8rem',
+              background: 'rgba(255, 255, 255, 0.1)',
+              borderRadius: '8px',
+              fontSize: '0.85rem',
+              border: '1px solid rgba(255, 255, 255, 0.1)'
+            }}>
+              💡 <span style={{ opacity: 0.8 }}>También puedes arrastrar archivos CBR/CBZ directamente aquí</span>
             </div>
           </div>
         </div>
@@ -260,95 +270,140 @@ const App: React.FC = () => {
   }
 
   return (
-    <div>
-      <div className="container">
-        <h1>
-          📁 SELECCIONA TU ARCHIVO O ARRÁSTRALO A LA PANTALLA
-        </h1>
-
-        {showButtons && (
-          <div style={{ 
-            background: 'rgba(102, 126, 234, 0.1)', 
-            borderRadius: '10px', 
-            padding: '15px', 
-            margin: '10px 0',
-            textAlign: 'center',
-            fontSize: '13px',
-            color: '#667eea'
-          }}>
-            ⌨️ <strong>Atajos:</strong> ← → (flechas) | A D (teclas) | Home/End (inicio/final)
+    <div className="min-h-screen bg-gradient-main">
+      {/* Navbar usando Bootstrap */}
+      <nav className="navbar navbar-expand-lg fixed-top navbar-custom">
+        <div className="container-fluid px-4">
+          <a className="navbar-brand text-white font-bold" href="#" style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>
+            📖 CBRVerse
+          </a>
+          <div className="text-white opacity-75" style={{ fontSize: '0.875rem' }}>
+            Visor de cómics CBR/CBZ
           </div>
-        )}
+        </div>
+      </nav>
 
-        <output id="list"></output>
-        <div id="alertArea"></div>
+      {/* Contenido principal */}
+      <div className="pt-20">
+        <div className="glass-container container mx-auto" style={{ maxWidth: '1200px' }}>
+          <div className="bg-gradient-title text-white p-4 rounded-xl text-center font-bold mb-6 text-shadow-lg" style={{ fontSize: 'clamp(1.2rem, 4vw, 2rem)' }}>
+            📁 SELECCIONA TU ARCHIVO O ARRÁSTRALO A LA PANTALLA
+          </div>
 
-        {isLoading && (
-          <div className="modal show" id="statusModal">
-            <div className="modal-body">
-              <div className="modal-header">
-                <h3>Procesando Archivo</h3>
+          {showButtons && (
+            <div className="alert alert-info d-flex align-items-center justify-content-center text-center" style={{
+              background: 'rgba(102, 126, 234, 0.1)',
+              borderColor: 'rgba(102, 126, 234, 0.3)',
+              color: '#667eea',
+              borderRadius: '10px',
+              padding: '15px',
+              margin: '10px 0',
+              fontSize: '14px'
+            }}>
+              <i className="bi bi-keyboard me-2"></i>
+              <strong>Atajos:</strong> ← → (flechas) | A D (teclas) | Home/End (inicio/final)
+            </div>
+          )}
+
+          <output id="list"></output>
+          <div id="alertArea"></div>
+
+          {isLoading && (
+            <div className="modal-overlay">
+              <div className="modal-content">
+                <div className="mb-4">
+                  <h3 className="text-shadow-lg" style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '0' }}>
+                    <i className="bi bi-gear-fill me-2" style={{ animation: 'spin 1s linear infinite' }}></i>
+                    Procesando Archivo
+                  </h3>
+                </div>
+                <p className="text-shadow-sm" style={{ fontSize: '1.1rem', marginBottom: '1.5rem' }}>
+                  Extrayendo y procesando imágenes...
+                </p>
+                <div className="progress-custom">
+                  <div 
+                    className="progress-bar-custom" 
+                    style={{ width: `${loadingProgress}%` }}
+                  ></div>
+                </div>
+                <small className="opacity-90">
+                  <i className="bi bi-clock me-1"></i>
+                  {loadingProgress}% completado
+                </small>
               </div>
-              <p className="loading-text">Extrayendo y procesando imágenes...</p>
-              <div className="progress">
-                <div className="bar" style={{ width: `${loadingProgress}%` }}></div>
+            </div>
+          )}
+
+          {showButtons && (
+            <div className="button-area">
+              <div className="row justify-content-center g-2 mb-3">
+                <div className="col-auto">
+                  <button 
+                    className="btn btn-primary btn-lg"
+                    onClick={prevPanel}
+                    disabled={currentPanel === 0}
+                  >
+                    <i className="bi bi-arrow-left me-1"></i> Anterior
+                  </button>
+                </div>
+                <div className="col-auto">
+                  <button 
+                    className="btn btn-primary btn-lg"
+                    onClick={nextPanel}
+                    disabled={currentPanel >= images.length - 1}
+                  >
+                    Siguiente <i className="bi bi-arrow-right ms-1"></i>
+                  </button>
+                </div>
               </div>
-              <small>{loadingProgress}% completado</small>
+              <div className="text-center">
+                <span className="panel-counter" id="panelCount">
+                  <i className="bi bi-file-earmark-text me-1"></i>
+                  Página {currentPanel + 1} de {images.length}
+                </span>
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {showButtons && (
-          <div id="buttonArea" style={{ textAlign: "center" }}>
-            <button 
-              className="foton" 
-              onClick={prevPanel}
-              disabled={currentPanel === 0}
-            >
-              ⬅️ Anterior
-            </button>
-            <button 
-              className="foton" 
-              onClick={nextPanel}
-              disabled={currentPanel >= images.length - 1}
-            >
-              Siguiente ➡️
-            </button>
-            <div>
-              <span id="panelCount">
-                📄 Página {currentPanel + 1} de {images.length}
-              </span>
+          <div className="text-center mb-4">
+            <img 
+              id="comicImg" 
+              alt="comic panel" 
+              className="comic-image img-fluid"
+            />
+          </div>
+
+          {showButtons && (
+            <div className="button-area">
+              <div className="text-center mb-3">
+                <span className="panel-counter" id="panelCount1">
+                  <i className="bi bi-file-earmark-text me-1"></i>
+                  Página {currentPanel + 1} de {images.length}
+                </span>
+              </div>
+              <div className="row justify-content-center g-2">
+                <div className="col-auto">
+                  <button 
+                    className="btn btn-primary btn-lg"
+                    onClick={prevPanel}
+                    disabled={currentPanel === 0}
+                  >
+                    <i className="bi bi-arrow-left me-1"></i> Anterior
+                  </button>
+                </div>
+                <div className="col-auto">
+                  <button 
+                    className="btn btn-primary btn-lg"
+                    onClick={nextPanel}
+                    disabled={currentPanel >= images.length - 1}
+                  >
+                    Siguiente <i className="bi bi-arrow-right ms-1"></i>
+                  </button>
+                </div>
+              </div>
             </div>
-          </div>
-        )}
-
-        <p>
-          <img id="comicImg" alt="comic panel" style={{ width: "100%" }} />
-        </p>
-
-        {showButtons && (
-          <div id="buttonArea1" style={{ textAlign: "center" }}>
-            <div>
-              <span id="panelCount1">
-                📄 Página {currentPanel + 1} de {images.length}
-              </span>
-            </div>
-            <button 
-              className="foton" 
-              onClick={prevPanel}
-              disabled={currentPanel === 0}
-            >
-              ⬅️ Anterior
-            </button>
-            <button 
-              className="foton" 
-              onClick={nextPanel}
-              disabled={currentPanel >= images.length - 1}
-            >
-              Siguiente ➡️
-            </button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

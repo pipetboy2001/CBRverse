@@ -12,6 +12,7 @@
   "dependencies": {
     "@types/jquery": "^3.5.32",
     "bootstrap": "^5.3.7",
+    "bootstrap-icons": "^1.13.1",
     "jquery": "^3.7.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
