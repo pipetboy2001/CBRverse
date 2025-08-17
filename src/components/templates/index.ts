@@ -1,0 +1,1 @@
+export { ComicReaderTemplate } from './ComicReaderTemplate';
