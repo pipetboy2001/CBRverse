@@ -212,37 +212,59 @@ const App: React.FC = () => {
     }
   };
 
+  const triggerFileInput = () => {
+    fileInputRef.current?.click();
+  };
+
+  // Pantalla de bienvenida cuando no hay cómics cargados
+  if (!showButtons && !isLoading) {
+    return (
+      <div className="welcome-screen">
+        <div className="welcome-container">
+          <div className="book-icon">
+            📖
+          </div>
+          <h1 className="welcome-title">CBRVerse</h1>
+          <p className="welcome-subtitle">
+            Arrastra tu cómic o selecciona un archivo para empezar
+          </p>
+          
+          <div className="upload-section">
+            <div className="upload-icon">
+              ⬆️
+            </div>
+            <h2 className="upload-title">Selecciona tu cómic</h2>
+            <p className="upload-description">
+              Soportamos archivos CBR, CBZ y PDF
+            </p>
+            
+            <button className="upload-button" onClick={triggerFileInput}>
+              Examinar archivos
+            </button>
+            
+            <input
+              ref={fileInputRef}
+              type="file"
+              onChange={handleFilesChange}
+              accept=".cbr,.cbz,.zip,.rar,.pdf"
+              style={{ display: 'none' }}
+            />
+            
+            <div className="tip-section">
+              💡 <span className="tip-text">También puedes arrastrar archivos CBR/CBZ directamente aquí</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="container">
         <h1>
           📁 SELECCIONA TU ARCHIVO O ARRÁSTRALO A LA PANTALLA
         </h1>
-
-        <input
-          ref={fileInputRef}
-          type="file"
-          id="files"
-          name="files[]"
-          multiple
-          onChange={handleFilesChange}
-          accept=".cbr,.cbz,.zip,.rar"
-          style={{ width: "100%", maxWidth: "500px" }}
-        />
-
-        {!showButtons && (
-          <div style={{ 
-            background: 'rgba(255, 255, 255, 0.9)', 
-            borderRadius: '10px', 
-            padding: '15px', 
-            margin: '20px 0',
-            textAlign: 'center',
-            fontSize: '14px',
-            color: '#666'
-          }}>
-            💡 <strong>Tip:</strong> Puedes arrastrar y soltar archivos CBR/CBZ directamente aquí
-          </div>
-        )}
 
         {showButtons && (
           <div style={{ 
