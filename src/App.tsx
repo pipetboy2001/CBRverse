@@ -18,6 +18,8 @@ const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [loadingProgress, setLoadingProgress] = useState<number>(0);
   const [comicName, setComicName] = useState<string>("");
+  const [cascadeMode, setCascadeMode] = useState<boolean>(false);
+  const [showConfigMenu, setShowConfigMenu] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
 
@@ -58,48 +60,99 @@ const App: React.FC = () => {
     const handleKeyPress = (e: KeyboardEvent) => {
       if (images.length === 0) return;
       
-      switch(e.key) {
-        case 'ArrowLeft':
-        case 'a':
-        case 'A':
-          e.preventDefault();
-          if (currentPanel > 0) {
+      if (cascadeMode) {
+        // En modo cascada, hacer scroll suave entre páginas
+        switch(e.key) {
+          case 'ArrowLeft':
+          case 'a':
+          case 'A':
+            e.preventDefault();
+            if (currentPanel > 0) {
+              const newPanel = currentPanel - 1;
+              setCurrentPanel(newPanel);
+              scrollToPage(newPanel);
+            }
+            break;
+          case 'ArrowRight':
+          case 'd':
+          case 'D':
+            e.preventDefault();
+            if (currentPanel < images.length - 1) {
+              const newPanel = currentPanel + 1;
+              setCurrentPanel(newPanel);
+              scrollToPage(newPanel);
+            }
+            break;
+          case 'Home':
+            e.preventDefault();
+            setCurrentPanel(0);
+            scrollToPage(0);
+            break;
+          case 'End':
+            e.preventDefault();
+            const lastPanel = images.length - 1;
+            setCurrentPanel(lastPanel);
+            scrollToPage(lastPanel);
+            break;
+        }
+      } else {
+        // Modo página individual original
+        switch(e.key) {
+          case 'ArrowLeft':
+          case 'a':
+          case 'A':
+            e.preventDefault();
+            if (currentPanel > 0) {
+              $('html, body').animate({ scrollTop: window.innerHeight * 0.3 }, 400);
+              const newPanel = currentPanel - 1;
+              setCurrentPanel(newPanel);
+              drawPanel(newPanel);
+            }
+            break;
+          case 'ArrowRight':
+          case 'd':
+          case 'D':
+            e.preventDefault();
+            if (currentPanel < images.length - 1) {
+              $('html, body').animate({ scrollTop: window.innerHeight * 0.3 }, 400);
+              const newPanel = currentPanel + 1;
+              setCurrentPanel(newPanel);
+              drawPanel(newPanel);
+            }
+            break;
+          case 'Home':
+            e.preventDefault();
             $('html, body').animate({ scrollTop: window.innerHeight * 0.3 }, 400);
-            const newPanel = currentPanel - 1;
-            setCurrentPanel(newPanel);
-            drawPanel(newPanel);
-          }
-          break;
-        case 'ArrowRight':
-        case 'd':
-        case 'D':
-          e.preventDefault();
-          if (currentPanel < images.length - 1) {
+            setCurrentPanel(0);
+            drawPanel(0);
+            break;
+          case 'End':
+            e.preventDefault();
             $('html, body').animate({ scrollTop: window.innerHeight * 0.3 }, 400);
-            const newPanel = currentPanel + 1;
-            setCurrentPanel(newPanel);
-            drawPanel(newPanel);
-          }
-          break;
-        case 'Home':
-          e.preventDefault();
-          $('html, body').animate({ scrollTop: window.innerHeight * 0.3 }, 400);
-          setCurrentPanel(0);
-          drawPanel(0);
-          break;
-        case 'End':
-          e.preventDefault();
-          $('html, body').animate({ scrollTop: window.innerHeight * 0.3 }, 400);
-          const lastPanel = images.length - 1;
-          setCurrentPanel(lastPanel);
-          drawPanel(lastPanel);
-          break;
+            const lastPanel = images.length - 1;
+            setCurrentPanel(lastPanel);
+            drawPanel(lastPanel);
+            break;
+        }
       }
     };
 
     document.addEventListener('keydown', handleKeyPress);
     return () => document.removeEventListener('keydown', handleKeyPress);
-  }, [currentPanel, images]);
+  }, [currentPanel, images, cascadeMode]);
+
+  // Cerrar menú de configuración al hacer clic fuera
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (showConfigMenu && !target.closest('.config-menu-container')) {
+        setShowConfigMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showConfigMenu]);
 
   const setupDragAndDrop = () => {
     const $document = $(document);
@@ -195,6 +248,18 @@ const App: React.FC = () => {
     $("#comicImg").attr("src", imageArray[num]);
   };
 
+  const scrollToPage = (pageIndex: number) => {
+    // Buscar el elemento de la página en modo cascada y hacer scroll suave hacia él
+    const pageElement = document.querySelector(`.cascade-page:nth-child(${pageIndex + 1})`);
+    if (pageElement) {
+      pageElement.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'start',
+        inline: 'nearest'
+      });
+    }
+  };
+
   const prevPanel = () => {
     if (currentPanel > 0) {
       // Scroll cerca del tope (10% desde arriba)
@@ -225,6 +290,24 @@ const App: React.FC = () => {
     fileInputRef.current?.click();
   };
 
+  const toggleCascadeMode = () => {
+    const newCascadeMode = !cascadeMode;
+    setCascadeMode(newCascadeMode);
+    setShowConfigMenu(false); // Cerrar el menú al seleccionar una opción
+    
+    // Si estamos volviendo al modo página, asegurar que la imagen se muestre
+    if (!newCascadeMode && images.length > 0) {
+      // Usar setTimeout para asegurar que React haya actualizado el DOM
+      setTimeout(() => {
+        $("#comicImg").attr("src", images[currentPanel] || "");
+      }, 100);
+    }
+  };
+
+  const toggleConfigMenu = () => {
+    setShowConfigMenu(prev => !prev);
+  };
+
   const closeComic = () => {
     setImages([]);
     setCurrentPanel(0);
@@ -232,6 +315,8 @@ const App: React.FC = () => {
     setComicName("");
     setIsLoading(false);
     setLoadingProgress(0);
+    setCascadeMode(false);
+    setShowConfigMenu(false);
     $("#comicImg").attr("src", "");
   };
 
@@ -310,29 +395,82 @@ const App: React.FC = () => {
               </span>
               {comicName && (
                 <span className="page-info">
-                  Página {currentPanel + 1} de {images.length}
+                  {cascadeMode 
+                    ? `Modo Cascada - ${images.length} páginas`
+                    : `Página ${currentPanel + 1} de ${images.length}`
+                  }
                 </span>
               )}
             </div>
 
-            {/* Botón de configuración */}
-            <button 
-              className="navbar-config-btn"
-              title="Configuración (próximamente)"
-              disabled
-            >
-              <i className="bi bi-gear"></i>
-            </button>
+            {/* Botón de configuración con menú desplegable */}
+            <div className="config-menu-container" style={{ position: 'relative' }}>
+              <button 
+                className="navbar-config-btn"
+                title="Opciones"
+                onClick={toggleConfigMenu}
+              >
+                <i className="bi bi-gear"></i>
+              </button>
+
+              {/* Menú desplegable de configuración */}
+              {showConfigMenu && (
+                <div className="config-dropdown">
+                  <div className="config-dropdown-header">
+                    <i className="bi bi-gear-fill me-2"></i>
+                    Opciones
+                  </div>
+                  
+                  <div className="config-dropdown-item" onClick={toggleCascadeMode}>
+                    <div className="config-item-icon">
+                      <i className={`bi bi-${cascadeMode ? 'file-earmark-text' : 'layers'}`}></i>
+                    </div>
+                    <div className="config-item-content">
+                      <div className="config-item-title">
+                        {cascadeMode ? 'Modo Página' : 'Modo Cascada'}
+                      </div>
+                      <div className="config-item-desc">
+                        {cascadeMode 
+                          ? 'Ver una página a la vez' 
+                          : 'Ver todas las páginas en secuencia'
+                        }
+                      </div>
+                    </div>
+                    <div className="config-item-status">
+                      {cascadeMode ? 'Activar' : 'Activar'}
+                    </div>
+                  </div>
+
+                  {/* Opción placeholder para futuras funcionalidades */}
+                  <div className="config-dropdown-item config-item-disabled">
+                    <div className="config-item-icon">
+                      <i className="bi bi-palette"></i>
+                    </div>
+                    <div className="config-item-content">
+                      <div className="config-item-title">
+                        Temas
+                      </div>
+                      <div className="config-item-desc">
+                        Cambiar tema de la aplicación
+                      </div>
+                    </div>
+                    <div className="config-item-status">
+                      Próximamente
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </nav>
 
       {/* Contenido principal */}
-      <div className="pt-20 pb-footer">
+      <div className={`pt-20 ${cascadeMode ? '' : 'pb-footer'}`}>
         <div className="glass-container container mx-auto" style={{ maxWidth: '1200px' }}>
           
 
-          {showButtons && (
+          {showButtons && !cascadeMode && (
             <div className="alert alert-info d-flex align-items-center justify-content-center text-center" style={{
               background: 'rgba(60, 60, 60, 0.6)',
               borderColor: 'rgba(100, 100, 100, 0.3)',
@@ -345,6 +483,22 @@ const App: React.FC = () => {
             }}>
               <i className="bi bi-keyboard me-2"></i>
               <strong>Atajos:</strong> ← → (flechas) | A D (teclas) 
+            </div>
+          )}
+
+          {showButtons && cascadeMode && (
+            <div className="alert alert-info d-flex align-items-center justify-content-center text-center" style={{
+              background: 'rgba(60, 60, 60, 0.6)',
+              borderColor: 'rgba(100, 100, 100, 0.3)',
+              color: '#c0c0c0',
+              borderRadius: '10px',
+              padding: '15px',
+              margin: '10px 0',
+              fontSize: '14px',
+              border: '1px solid rgba(100, 100, 100, 0.3)'
+            }}>
+              <i className="bi bi-layers me-2"></i>
+              <strong>Modo Cascada:</strong> Todas las páginas se muestran en secuencia. Usa ← → para navegar.
             </div>
           )}
 
@@ -377,18 +531,40 @@ const App: React.FC = () => {
             </div>
           )}
 
-          <div className="text-center mb-4">
-            <img 
-              id="comicImg" 
-              alt="comic panel" 
-              className="comic-image img-fluid"
-            />
-          </div>
+          {/* Modo página individual */}
+          {!cascadeMode && (
+            <div className="text-center mb-4">
+              <img 
+                id="comicImg" 
+                alt="comic panel" 
+                className="comic-image img-fluid"
+              />
+            </div>
+          )}
+
+          {/* Modo cascada - todas las imágenes */}
+          {cascadeMode && showButtons && (
+            <div className="cascade-container">
+              {images.map((imageSrc, index) => (
+                <div key={index} className="cascade-page">
+                  <div className="page-number">
+                    Página {index + 1}
+                  </div>
+                  <img 
+                    src={imageSrc}
+                    alt={`Página ${index + 1}`}
+                    className="cascade-image img-fluid"
+                    loading="lazy"
+                  />
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Footer fijo con controles de navegación */}
-      {showButtons && (
+      {/* Footer fijo con controles de navegación - Solo en modo página */}
+      {showButtons && !cascadeMode && (
         <footer className="footer-fixed">
           <div className="footer-content">
             <div className="footer-controls">
