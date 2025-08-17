@@ -17,6 +17,7 @@ const App: React.FC = () => {
   const [showButtons, setShowButtons] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [loadingProgress, setLoadingProgress] = useState<number>(0);
+  const [comicName, setComicName] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
 
@@ -63,6 +64,7 @@ const App: React.FC = () => {
         case 'A':
           e.preventDefault();
           if (currentPanel > 0) {
+            $('html, body').animate({ scrollTop: window.innerHeight * 0.3 }, 400);
             const newPanel = currentPanel - 1;
             setCurrentPanel(newPanel);
             drawPanel(newPanel);
@@ -73,6 +75,7 @@ const App: React.FC = () => {
         case 'D':
           e.preventDefault();
           if (currentPanel < images.length - 1) {
+            $('html, body').animate({ scrollTop: window.innerHeight * 0.3 }, 400);
             const newPanel = currentPanel + 1;
             setCurrentPanel(newPanel);
             drawPanel(newPanel);
@@ -80,11 +83,13 @@ const App: React.FC = () => {
           break;
         case 'Home':
           e.preventDefault();
+          $('html, body').animate({ scrollTop: window.innerHeight * 0.3 }, 400);
           setCurrentPanel(0);
           drawPanel(0);
           break;
         case 'End':
           e.preventDefault();
+          $('html, body').animate({ scrollTop: window.innerHeight * 0.3 }, 400);
           const lastPanel = images.length - 1;
           setCurrentPanel(lastPanel);
           drawPanel(lastPanel);
@@ -136,6 +141,10 @@ const App: React.FC = () => {
   const handleFile = (file: File) => {
     console.log('try to parse ' + file.name);
 
+    // Extraer nombre del archivo sin extensión
+    const fileName = file.name.replace(/\.(cbr|cbz|zip|rar)$/i, '');
+    setComicName(fileName);
+
     setImages([]);
     setCurrentPanel(0);
     setShowButtons(false);
@@ -184,13 +193,12 @@ const App: React.FC = () => {
   const drawPanel = (num: number, imageArray: string[] = images) => {
     setCurrentPanel(num);
     $("#comicImg").attr("src", imageArray[num]);
-    $("#panelCount").html(`Página ${num + 1} de ${imageArray.length}`);
-    $("#panelCount1").html(`Página ${num + 1} de ${imageArray.length}`);
   };
 
   const prevPanel = () => {
     if (currentPanel > 0) {
-      $('html, body').animate({ scrollTop: 550 }, 500);
+      // Scroll cerca del tope (10% desde arriba)
+      $('html, body').animate({ scrollTop: window.innerHeight * 0.3 }, 400);
       const newPanel = currentPanel - 1;
       setCurrentPanel(newPanel);
       drawPanel(newPanel);
@@ -199,7 +207,8 @@ const App: React.FC = () => {
 
   const nextPanel = () => {
     if (currentPanel + 1 < images.length) {
-      $('html, body').animate({ scrollTop: 550 }, 500);
+      // Scroll cerca del tope (10% desde arriba)
+      $('html, body').animate({ scrollTop: window.innerHeight * 0.3 }, 400);
       const newPanel = currentPanel + 1;
       setCurrentPanel(newPanel);
       drawPanel(newPanel);
@@ -214,6 +223,16 @@ const App: React.FC = () => {
 
   const triggerFileInput = () => {
     fileInputRef.current?.click();
+  };
+
+  const closeComic = () => {
+    setImages([]);
+    setCurrentPanel(0);
+    setShowButtons(false);
+    setComicName("");
+    setIsLoading(false);
+    setLoadingProgress(0);
+    $("#comicImg").attr("src", "");
   };
 
   // Pantalla de bienvenida cuando no hay cómics cargados
@@ -272,36 +291,60 @@ const App: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-main">
       {/* Navbar usando Bootstrap */}
-      <nav className="navbar navbar-expand-lg fixed-top navbar-custom">
-        <div className="container-fluid px-4">
-          <a className="navbar-brand text-white font-bold" href="#" style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>
-            📖 CBRVerse
-          </a>
-          <div className="text-white opacity-75" style={{ fontSize: '0.875rem' }}>
-            Visor de cómics CBR/CBZ
+      <nav className="navbar fixed-top navbar-custom">
+        <div className="container-fluid">
+          <div className="navbar-content">
+            {/* Botón cerrar (X) */}
+            <button 
+              className="navbar-close-btn"
+              onClick={closeComic}
+              title="Cerrar cómic y seleccionar otro"
+            >
+              <i className="bi bi-x-lg"></i>
+            </button>
+
+            {/* Nombre del cómic */}
+            <div className="navbar-title">
+              <span className="title-text">
+                {comicName || "CBRVerse"}
+              </span>
+              {comicName && (
+                <span className="page-info">
+                  Página {currentPanel + 1} de {images.length}
+                </span>
+              )}
+            </div>
+
+            {/* Botón de configuración */}
+            <button 
+              className="navbar-config-btn"
+              title="Configuración (próximamente)"
+              disabled
+            >
+              <i className="bi bi-gear"></i>
+            </button>
           </div>
         </div>
       </nav>
 
       {/* Contenido principal */}
-      <div className="pt-20">
+      <div className="pt-20 pb-footer">
         <div className="glass-container container mx-auto" style={{ maxWidth: '1200px' }}>
-          <div className="bg-gradient-title text-white p-4 rounded-xl text-center font-bold mb-6 text-shadow-lg" style={{ fontSize: 'clamp(1.2rem, 4vw, 2rem)' }}>
-            📁 SELECCIONA TU ARCHIVO O ARRÁSTRALO A LA PANTALLA
-          </div>
+          
 
           {showButtons && (
             <div className="alert alert-info d-flex align-items-center justify-content-center text-center" style={{
-              background: 'rgba(102, 126, 234, 0.1)',
-              borderColor: 'rgba(102, 126, 234, 0.3)',
-              color: '#667eea',
+              background: 'rgba(60, 60, 60, 0.6)',
+              borderColor: 'rgba(100, 100, 100, 0.3)',
+              color: '#c0c0c0',
               borderRadius: '10px',
               padding: '15px',
               margin: '10px 0',
-              fontSize: '14px'
+              fontSize: '14px',
+              border: '1px solid rgba(100, 100, 100, 0.3)'
             }}>
               <i className="bi bi-keyboard me-2"></i>
-              <strong>Atajos:</strong> ← → (flechas) | A D (teclas) | Home/End (inicio/final)
+              <strong>Atajos:</strong> ← → (flechas) | A D (teclas) 
             </div>
           )}
 
@@ -334,37 +377,6 @@ const App: React.FC = () => {
             </div>
           )}
 
-          {showButtons && (
-            <div className="button-area">
-              <div className="row justify-content-center g-2 mb-3">
-                <div className="col-auto">
-                  <button 
-                    className="btn btn-primary btn-lg"
-                    onClick={prevPanel}
-                    disabled={currentPanel === 0}
-                  >
-                    <i className="bi bi-arrow-left me-1"></i> Anterior
-                  </button>
-                </div>
-                <div className="col-auto">
-                  <button 
-                    className="btn btn-primary btn-lg"
-                    onClick={nextPanel}
-                    disabled={currentPanel >= images.length - 1}
-                  >
-                    Siguiente <i className="bi bi-arrow-right ms-1"></i>
-                  </button>
-                </div>
-              </div>
-              <div className="text-center">
-                <span className="panel-counter" id="panelCount">
-                  <i className="bi bi-file-earmark-text me-1"></i>
-                  Página {currentPanel + 1} de {images.length}
-                </span>
-              </div>
-            </div>
-          )}
-
           <div className="text-center mb-4">
             <img 
               id="comicImg" 
@@ -372,39 +384,38 @@ const App: React.FC = () => {
               className="comic-image img-fluid"
             />
           </div>
-
-          {showButtons && (
-            <div className="button-area">
-              <div className="text-center mb-3">
-                <span className="panel-counter" id="panelCount1">
-                  <i className="bi bi-file-earmark-text me-1"></i>
-                  Página {currentPanel + 1} de {images.length}
-                </span>
-              </div>
-              <div className="row justify-content-center g-2">
-                <div className="col-auto">
-                  <button 
-                    className="btn btn-primary btn-lg"
-                    onClick={prevPanel}
-                    disabled={currentPanel === 0}
-                  >
-                    <i className="bi bi-arrow-left me-1"></i> Anterior
-                  </button>
-                </div>
-                <div className="col-auto">
-                  <button 
-                    className="btn btn-primary btn-lg"
-                    onClick={nextPanel}
-                    disabled={currentPanel >= images.length - 1}
-                  >
-                    Siguiente <i className="bi bi-arrow-right ms-1"></i>
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </div>
+
+      {/* Footer fijo con controles de navegación */}
+      {showButtons && (
+        <footer className="footer-fixed">
+          <div className="footer-content">
+            <div className="footer-controls">
+              <button 
+                className="btn footer-btn"
+                onClick={prevPanel}
+                disabled={currentPanel === 0}
+              >
+                <i className="bi bi-arrow-left me-1"></i> Anterior
+              </button>
+              
+              <div className="footer-page-counter">
+                <i className="bi bi-file-earmark-text me-1"></i>
+                Página {currentPanel + 1} de {images.length}
+              </div>
+              
+              <button 
+                className="btn footer-btn"
+                onClick={nextPanel}
+                disabled={currentPanel >= images.length - 1}
+              >
+                Siguiente <i className="bi bi-arrow-right ms-1"></i>
+              </button>
+            </div>
+          </div>
+        </footer>
+      )}
     </div>
   );
 };

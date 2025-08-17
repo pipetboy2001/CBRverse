@@ -1,24 +1,24 @@
 /* CSS moderno usando Bootstrap y estilos personalizados */
 
-/* Variables CSS personalizadas */
+/* Variables CSS personalizadas - Tema oscuro profesional */
 :root {
-  --gradient-main: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  --gradient-title: linear-gradient(45deg, #ff6b6b, #ee5a24, #ffa726);
-  --gradient-button: linear-gradient(45deg, #e74c3c, #c0392b);
-  --gradient-button-hover: linear-gradient(45deg, #c0392b, #a93226);
-  --gradient-upload: linear-gradient(45deg, #ff6b6b, #ee5a24);
-  --gradient-counter: linear-gradient(45deg, #667eea, #764ba2);
-  --gradient-modal: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  --gradient-progress: linear-gradient(45deg, #00f2fe, #4facfe);
-  --gradient-navbar: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --gradient-main: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+  --gradient-title: linear-gradient(45deg, #333333, #444444);
+  --gradient-button: linear-gradient(45deg, #404040, #505050);
+  --gradient-button-hover: linear-gradient(45deg, #505050, #606060);
+  --gradient-upload: linear-gradient(45deg, #404040, #505050);
+  --gradient-counter: linear-gradient(45deg, #333333, #444444);
+  --gradient-modal: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+  --gradient-progress: linear-gradient(45deg, #666666, #777777);
+  --gradient-navbar: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
   
-  --shadow-glow-red: 0 6px 20px rgba(255, 107, 107, 0.4);
-  --shadow-glow-red-hover: 0 8px 25px rgba(255, 107, 107, 0.6);
-  --shadow-glow-blue: 0 6px 20px rgba(79, 172, 254, 0.4);
-  --shadow-glow-blue-hover: 0 8px 25px rgba(79, 172, 254, 0.6);
-  --shadow-glow-purple: 0 4px 15px rgba(102, 126, 234, 0.3);
-  --shadow-card: 0 20px 40px rgba(0, 0, 0, 0.1);
-  --shadow-modal: 0 20px 40px rgba(0, 0, 0, 0.3);
+  --shadow-glow-red: 0 6px 20px rgba(100, 100, 100, 0.2);
+  --shadow-glow-red-hover: 0 8px 25px rgba(120, 120, 120, 0.3);
+  --shadow-glow-blue: 0 6px 20px rgba(100, 100, 100, 0.2);
+  --shadow-glow-blue-hover: 0 8px 25px rgba(120, 120, 120, 0.3);
+  --shadow-glow-purple: 0 4px 15px rgba(80, 80, 80, 0.3);
+  --shadow-card: 0 20px 40px rgba(0, 0, 0, 0.3);
+  --shadow-modal: 0 20px 40px rgba(0, 0, 0, 0.5);
 }
 
 /* Reset y estilos base */
@@ -30,11 +30,21 @@ body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   margin: 0;
   padding: 0;
+  transition: background-color 0.5s ease; /* Transición suave entre modos */
+}
+
+/* Transición suave para cambios de modo */
+.min-h-screen {
+  transition: background 0.6s ease-in-out;
 }
 
 /* Utilidades de fondo */
 .bg-gradient-main {
-  background: var(--gradient-main);
+  background: #000000; /* Negro puro siempre */
+}
+
+.bg-reader-mode {
+  background: #000000; /* Negro puro para lectura */
 }
 
 .bg-gradient-title {
@@ -60,8 +70,31 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--gradient-main);
+  background: linear-gradient(135deg, #000000 0%, #1a1a2e 50%, #16213e 100%);
   padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Efecto de destellos sutiles en el fondo */
+.welcome-screen::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 80%, rgba(79, 172, 254, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(102, 126, 234, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(138, 43, 226, 0.05) 0%, transparent 50%);
+  animation: shimmer 8s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+@keyframes shimmer {
+  0% { opacity: 0.3; }
+  100% { opacity: 0.7; }
 }
 
 .welcome-container {
@@ -72,29 +105,38 @@ body {
 }
 
 .upload-section {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(40, 40, 40, 0.8);
   border-radius: 20px;
   padding: 2rem;
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+  border: 2px dashed rgba(79, 172, 254, 0.4);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
 }
 
 .glass-container {
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(20, 20, 20, 0.9);
   border-radius: 20px;
-  box-shadow: var(--shadow-card);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   padding: 2rem;
   margin-bottom: 2rem;
   backdrop-filter: blur(10px);
+  border: 1px solid rgba(60, 60, 60, 0.3);
   animation: fadeIn 0.6s ease-out;
 }
 
-/* Botones personalizados */
+/* Contenedor unificado - siempre oscuro y profesional */
+.bg-reader-mode .glass-container,
+.bg-gradient-main .glass-container {
+  background: rgba(20, 20, 20, 0.9);
+  border: 1px solid rgba(60, 60, 60, 0.3);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+/* Botones personalizados - Tema oscuro profesional */
 .btn-upload {
   background: var(--gradient-upload);
-  color: white;
-  border: none;
+  color: #e0e0e0;
+  border: 1px solid rgba(100, 100, 100, 0.3);
   border-radius: 25px;
   padding: 12px 30px;
   font-size: 1rem;
@@ -110,13 +152,15 @@ body {
 .btn-upload:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-glow-red-hover);
-  background: linear-gradient(45deg, #ee5a24, #e17055);
+  background: linear-gradient(45deg, #505050, #606060);
+  border-color: rgba(120, 120, 120, 0.5);
 }
 
-/* Override de botones Bootstrap */
+/* Override de botones Bootstrap - Tema oscuro */
 .btn-primary {
   background: var(--gradient-button) !important;
-  border: none !important;
+  border: 1px solid rgba(100, 100, 100, 0.3) !important;
+  color: #e0e0e0 !important;
   border-radius: 25px !important;
   font-weight: 600 !important;
   text-transform: uppercase !important;
@@ -130,6 +174,7 @@ body {
   background: var(--gradient-button-hover) !important;
   transform: translateY(-3px) !important;
   box-shadow: var(--shadow-glow-red-hover) !important;
+  border-color: rgba(120, 120, 120, 0.5) !important;
 }
 
 .btn-primary:active {
@@ -137,18 +182,114 @@ body {
 }
 
 .btn-primary:disabled {
-  background: linear-gradient(45deg, #95a5a6, #7f8c8d) !important;
+  background: linear-gradient(45deg, #2a2a2a, #1a1a1a) !important;
   cursor: not-allowed !important;
   transform: none !important;
-  box-shadow: 0 3px 10px rgba(149, 165, 166, 0.3) !important;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3) !important;
+  color: rgba(160, 160, 160, 0.5) !important;
+  border-color: rgba(50, 50, 50, 0.5) !important;
 }
 
-/* Navbar personalizada */
+/* Navbar personalizada - Negro profesional */
 .navbar-custom {
   background: var(--gradient-navbar) !important;
   backdrop-filter: blur(10px);
   border: none;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(60, 60, 60, 0.3);
+}
+
+.navbar-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0 15px;
+  gap: 10px;
+}
+
+.navbar-close-btn {
+  background: rgba(60, 60, 60, 0.8);
+  border: 1px solid rgba(100, 100, 100, 0.3);
+  color: #e0e0e0;
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(5px);
+  flex-shrink: 0;
+  min-width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.navbar-close-btn:hover {
+  background: rgba(80, 80, 80, 0.9);
+  border-color: rgba(120, 120, 120, 0.5);
+  transform: scale(1.05);
+  box-shadow: 0 4px 15px rgba(60, 60, 60, 0.4);
+}
+
+.navbar-title {
+  flex: 1;
+  text-align: center;
+  color: #e0e0e0;
+  min-width: 0;
+  padding: 0 10px;
+}
+
+.title-text {
+  display: block;
+  font-size: 16px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+  color: #e0e0e0;
+}
+
+.page-info {
+  display: block;
+  font-size: 12px;
+  opacity: 0.7;
+  line-height: 1;
+  margin-top: 2px;
+  color: #b0b0b0;
+}
+
+.navbar-config-btn {
+  background: rgba(60, 60, 60, 0.8);
+  border: 1px solid rgba(100, 100, 100, 0.3);
+  color: #e0e0e0;
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(5px);
+  flex-shrink: 0;
+  min-width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.navbar-config-btn:hover:not(:disabled) {
+  background: rgba(80, 80, 80, 0.9);
+  border-color: rgba(120, 120, 120, 0.5);
+  transform: scale(1.05);
+  box-shadow: 0 4px 15px rgba(60, 60, 60, 0.4);
+}
+
+.navbar-config-btn:disabled {
+  background: rgba(40, 40, 40, 0.6);
+  border-color: rgba(60, 60, 60, 0.3);
+  color: rgba(140, 140, 140, 0.6);
+  cursor: not-allowed;
 }
 
 /* Counters de página */
@@ -167,15 +308,16 @@ body {
 
 /* Áreas de botones */
 .button-area {
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(40, 40, 40, 0.8);
   border-radius: 15px;
   padding: 20px;
   margin: 20px 0;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
   backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Modal personalizado */
+/* Modal personalizado - Siempre morado para branding/UI */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -191,7 +333,7 @@ body {
 }
 
 .modal-content {
-  background: var(--gradient-modal);
+  background: var(--gradient-modal); /* Siempre morado para UI/Settings */
   color: white;
   padding: 30px;
   border-radius: 20px;
@@ -200,6 +342,15 @@ body {
   text-align: center;
   box-shadow: var(--shadow-modal);
   border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Clases para futuras configuraciones/menús - Siempre morado */
+.settings-modal,
+.menu-modal,
+.config-panel {
+  background: var(--gradient-modal) !important;
+  color: white !important;
+  border: 2px solid rgba(255, 255, 255, 0.2) !important;
 }
 
 /* Barra de progreso */
@@ -242,16 +393,15 @@ body {
   animation: progress-animation 2s linear infinite;
 }
 
-/* Imagen del cómic */
+/* Imagen del cómic - Colores naturales con marco sutil */
 .comic-image {
   width: 100%;
   max-width: 100%;
   height: auto;
-  border-radius: 12px;
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
-  border: 3px solid transparent;
-  background: linear-gradient(white, white) padding-box,
-              linear-gradient(45deg, #ff6b6b, #4ecdc4) border-box;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(80, 80, 80, 0.4);
+  background: #000;
 }
 
 /* Alertas personalizadas */
@@ -260,14 +410,15 @@ body {
   margin: 20px 0;
   border-radius: 12px;
   border: none;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
   font-weight: 500;
 }
 
 .alert-error {
   background: linear-gradient(45deg, #e74c3c, #c0392b);
   color: white;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(231, 76, 60, 0.3);
 }
 
 /* Animaciones */
@@ -300,7 +451,7 @@ body {
   }
 }
 
-/* Responsividad */
+/* Responsive design para móviles */
 @media (max-width: 768px) {
   .glass-container {
     margin: 10px;
@@ -333,6 +484,52 @@ body {
     padding: 1.2rem;
     margin: 0 1rem;
   }
+  
+  .footer-controls {
+    flex-direction: row !important;
+    gap: 5px !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+  }
+  
+  .footer-page-counter {
+    order: 0 !important;
+    margin-bottom: 0 !important;
+    font-size: 12px !important;
+    padding: 6px 10px !important;
+    flex-shrink: 0 !important;
+  }
+  
+  .footer-btn {
+    padding: 6px 12px !important;
+    font-size: 12px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .footer-btn i {
+    font-size: 10px !important;
+  }
+
+  /* Navbar responsivo */
+  .navbar-content {
+    padding: 0 10px;
+    gap: 8px;
+  }
+  
+  .navbar-close-btn, .navbar-config-btn {
+    min-width: 36px;
+    height: 36px;
+    padding: 6px 8px;
+    font-size: 14px;
+  }
+  
+  .title-text {
+    font-size: 14px;
+  }
+  
+  .page-info {
+    font-size: 11px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -344,6 +541,118 @@ body {
   .welcome-container h1 {
     font-size: 1.5rem;
   }
+  
+  .footer-content {
+    margin: 0 5px;
+    padding: 8px;
+  }
+  
+  .footer-page-counter {
+    font-size: 10px !important;
+    padding: 4px 8px !important;
+  }
+
+  .footer-btn {
+    padding: 4px 8px !important;
+    font-size: 10px !important;
+  }
+
+  /* Navbar muy pequeño */
+  .navbar-content {
+    padding: 0 8px;
+    gap: 6px;
+  }
+  
+  .navbar-close-btn, .navbar-config-btn {
+    min-width: 32px;
+    height: 32px;
+    padding: 4px 6px;
+    font-size: 12px;
+  }
+  
+  .title-text {
+    font-size: 12px;
+  }
+  
+  .page-info {
+    font-size: 10px;
+  }
+}
+
+/* Footer fijo - Negro profesional */
+.footer-fixed {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--gradient-navbar);
+  backdrop-filter: blur(10px);
+  border: none;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+  padding: 15px 0;
+  border-top: 1px solid rgba(60, 60, 60, 0.3);
+}
+
+.footer-content {
+  background: rgba(40, 40, 40, 0.8);
+  border-radius: 15px;
+  padding: 15px;
+  margin: 0 15px;
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(80, 80, 80, 0.3);
+}
+
+.footer-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.footer-page-counter {
+  background: rgba(60, 60, 60, 0.8);
+  color: #e0e0e0;
+  padding: 8px 16px;
+  border-radius: 15px;
+  font-weight: bold;
+  font-size: 14px;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(100, 100, 100, 0.3);
+}
+
+.footer-btn {
+  background: rgba(60, 60, 60, 0.8) !important;
+  border: 1px solid rgba(100, 100, 100, 0.3) !important;
+  color: #e0e0e0 !important;
+  padding: 10px 20px !important;
+  border-radius: 15px !important;
+  font-weight: 600 !important;
+  transition: all 0.3s ease !important;
+  backdrop-filter: blur(5px) !important;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5) !important;
+}
+
+.footer-btn:hover:not(:disabled) {
+  background: rgba(80, 80, 80, 0.9) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 20px rgba(60, 60, 60, 0.4) !important;
+  border-color: rgba(120, 120, 120, 0.5) !important;
+}
+
+.footer-btn:disabled {
+  background: rgba(40, 40, 40, 0.6) !important;
+  color: rgba(140, 140, 140, 0.6) !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+  box-shadow: none !important;
+  border-color: rgba(60, 60, 60, 0.3) !important;
+}
+
+/* Espaciado para el footer */
+.pb-footer {
+  padding-bottom: 100px;
 }
 
 /* Utilidades de posicionamiento y espaciado */
