@@ -8,7 +8,6 @@ interface ComicReaderTemplateProps {
   images: string[];
   currentPanel: number;
   comicName: string;
-  fileType?: string;
   isLoading: boolean;
   loadingProgress: number;
   showButtons: boolean;
@@ -34,7 +33,6 @@ export const ComicReaderTemplate: React.FC<ComicReaderTemplateProps> = ({
   images,
   currentPanel,
   comicName,
-  fileType,
   isLoading,
   loadingProgress,
   showButtons,
@@ -67,7 +65,7 @@ export const ComicReaderTemplate: React.FC<ComicReaderTemplateProps> = ({
         <div className="glass-container container mx-auto" style={{ maxWidth: '1200px' }}>
           {/* Alertas informativas */}
           {showButtons && (
-            <InfoAlert cascadeMode={cascadeMode} fileType={fileType} />
+            <InfoAlert cascadeMode={cascadeMode} />
           )}
 
           <output id="list"></output>

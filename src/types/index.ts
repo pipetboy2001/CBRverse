@@ -1,7 +1,5 @@
 // Types for CBRverse application
 
-export type FileType = 'cbr' | 'cbz' | 'zip' | 'rar' | 'pdf';
-
 export interface ComicState {
   images: string[];
   currentPanel: number;
@@ -9,7 +7,6 @@ export interface ComicState {
   isLoading: boolean;
   loadingProgress: number;
   showButtons: boolean;
-  fileType?: FileType;
 }
 
 export interface ViewMode {

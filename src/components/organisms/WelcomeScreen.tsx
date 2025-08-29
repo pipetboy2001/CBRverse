@@ -33,7 +33,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
             Selecciona tu cómic
           </h2>
           <p style={{ fontSize: '0.9rem', marginBottom: '1.5rem', opacity: 0.8 }}>
-            Soportamos archivos CBR, CBZ, RAR, ZIP y PDF
+            Soportamos archivos CBR, CBZ y PDF
           </p>
           
           <Button className="btn-upload" onClick={onTriggerFileInput}>
@@ -52,7 +52,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
             fontSize: '0.85rem',
             border: '1px solid rgba(255, 255, 255, 0.1)'
           }}>
-            💡 <span style={{ opacity: 0.8 }}>También puedes arrastrar archivos CBR/CBZ/PDF directamente aquí</span>
+            💡 <span style={{ opacity: 0.8 }}>También puedes arrastrar archivos CBR/CBZ directamente aquí</span>
           </div>
         </div>
       </div>
