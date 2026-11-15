@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from 'react';
-import { processPdfFile } from './pdfProcessor';
 import type { Archive } from '../types';
 
 const loadScript = (src: string): Promise<void> =>
@@ -135,7 +134,10 @@ export const useComicReader = () => {
     setLoadingProgress(0);
 
     if (/\.pdf$/i.test(file.name)) {
-      processPdfFile(file, setLoadingProgress)
+      // pdfjs-dist es pesado (~1.3MB con su worker); se carga solo cuando
+      // se abre un PDF, no en el bundle principal.
+      import('./pdfProcessor')
+        .then(({ processPdfFile }) => processPdfFile(file, setLoadingProgress))
         .then((newImages) => {
           setImages(newImages);
           setIsLoading(false);
