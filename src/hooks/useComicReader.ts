@@ -12,6 +12,13 @@ export const useComicReader = () => {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Libera las blob URLs de las páginas cada vez que se reemplazan (nuevo cómic, cierre, o unmount)
+  useEffect(() => {
+    return () => {
+      images.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, [images]);
+
   // Initialize external scripts
   useEffect(() => {
     const loadExternalScripts = async () => {
