@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import $ from 'jquery';
 import { processPdfFile } from './pdfProcessor';
+import type { Archive } from '../types';
 
 export const useComicReader = () => {
   const [images, setImages] = useState<string[]>([]);
@@ -21,6 +22,38 @@ export const useComicReader = () => {
 
   // Initialize external scripts
   useEffect(() => {
+    const setupDragAndDrop = () => {
+      const $document = $(document);
+
+      // Remove any existing handlers first
+      $document.off("dragover.cbrverse drop.cbrverse");
+
+      $document.on("dragover.cbrverse", (e) => {
+        e.preventDefault();
+        const dragEvent = e.originalEvent as DragEvent;
+        if (dragEvent && dragEvent.dataTransfer) {
+          dragEvent.dataTransfer.dropEffect = "move";
+        }
+      });
+
+      $document.on("drop.cbrverse", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const dragEvent = e.originalEvent as DragEvent;
+        if (!dragEvent?.dataTransfer?.files) return;
+        const files = dragEvent.dataTransfer.files;
+
+        if (files.length === 0) return;
+        if (files.length > 1) {
+          doError("You may only drop one file.");
+          return;
+        }
+
+        handleFile(files[0]);
+      });
+    };
+
     const loadExternalScripts = async () => {
       try {
         // Check if scripts are already loaded to avoid duplicates
@@ -83,38 +116,6 @@ export const useComicReader = () => {
     };
   }, []);
 
-  const setupDragAndDrop = () => {
-    const $document = $(document);
-    
-    // Remove any existing handlers first
-    $document.off("dragover.cbrverse drop.cbrverse");
-    
-    $document.on("dragover.cbrverse", (e) => {
-      e.preventDefault();
-      const dragEvent = e.originalEvent as DragEvent;
-      if (dragEvent && dragEvent.dataTransfer) {
-        dragEvent.dataTransfer.dropEffect = "move";
-      }
-    });
-
-    $document.on("drop.cbrverse", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-
-      const dragEvent = e.originalEvent as DragEvent;
-      if (!dragEvent?.dataTransfer?.files) return;
-      const files = dragEvent.dataTransfer.files;
-      
-      if (files.length === 0) return;
-      if (files.length > 1) {
-        doError("You may only drop one file.");
-        return;
-      }
-      
-      handleFile(files[0]);
-    });
-  };
-
   const doError = (message: string) => {
     const errorHtml = `
       <div class='alert alert-block alert-error'>
@@ -157,16 +158,16 @@ export const useComicReader = () => {
     }
 
     if (window.archiveOpenFile) {
-      window.archiveOpenFile(file, null, (archive: any, err: any) => {
+      window.archiveOpenFile(file, null, (archive: Archive | null, err: unknown) => {
         if (archive) {
           console.info('Uncompressing ' + archive.archive_type + ' ...');
-          
-          const imageArchive = archive.entries.filter((e: any) => e.is_file);
+
+          const imageArchive = archive.entries.filter((e) => e.is_file);
           const newImages: string[] = [];
           let processedCount = 0;
 
-          imageArchive.forEach((entry: any) => {
-            entry.readData((data: ArrayBuffer, _error: any) => {
+          imageArchive.forEach((entry) => {
+            entry.readData((data) => {
               if (data) {
                 const url = URL.createObjectURL(new Blob([data]));
                 newImages.push(url);
@@ -186,7 +187,7 @@ export const useComicReader = () => {
           });
         } else {
           console.error(err);
-          doError(err);
+          doError(err instanceof Error ? err.message : String(err));
           setIsLoading(false);
         }
       });
