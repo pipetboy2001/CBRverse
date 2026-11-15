@@ -69,6 +69,23 @@ describe('useComicReader.handleFile', () => {
     createObjectURLSpy.mockRestore();
   });
 
+  it('rechaza un archivo que supera el límite de tamaño sin intentar abrirlo (issue #41)', () => {
+    const archiveOpenFile = vi.fn();
+    window.archiveOpenFile = archiveOpenFile;
+
+    const hugeFile = new File(['x'], 'enorme.cbz');
+    Object.defineProperty(hugeFile, 'size', { value: 600 * 1024 * 1024 });
+
+    const { result } = renderHook(() => useComicReader());
+
+    act(() => {
+      result.current.handleFile(hugeFile);
+    });
+
+    expect(archiveOpenFile).not.toHaveBeenCalled();
+    expect(result.current.isLoading).toBe(false);
+  });
+
   it('muestra un error y no se queda cargando si el archivo no es un cómic válido', async () => {
     window.archiveOpenFile = (_file, _password, cb) => {
       cb(null, new Error('The archive type is unknown'));

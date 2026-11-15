@@ -120,8 +120,18 @@ export const useComicReader = () => {
     alertArea.append(alert);
   };
 
+  // shortcut: tope arbitrario para evitar que el navegador se cuelgue
+  // decodificando un archivo gigante en el hilo principal; subir si algún
+  // formato legítimo lo necesita.
+  const MAX_FILE_SIZE_BYTES = 500 * 1024 * 1024;
+
   const handleFile = (file: File) => {
     console.log('try to parse ' + file.name);
+
+    if (file.size > MAX_FILE_SIZE_BYTES) {
+      doError(`El archivo es demasiado grande (máximo ${MAX_FILE_SIZE_BYTES / (1024 * 1024)}MB).`);
+      return;
+    }
 
     // Extraer nombre del archivo sin extensión
     const fileName = file.name.replace(/\.(cbr|cbz|zip|rar|pdf)$/i, '');
