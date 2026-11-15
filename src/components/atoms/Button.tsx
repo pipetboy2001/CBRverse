@@ -7,6 +7,9 @@ interface ButtonProps {
   variant?: 'primary' | 'secondary' | 'navbar' | 'footer';
   className?: string;
   title?: string;
+  'aria-expanded'?: boolean;
+  'aria-haspopup'?: React.AriaAttributes['aria-haspopup'];
+  'aria-label'?: string;
 }
 
 export const Button: React.FC<ButtonProps> = ({
@@ -15,7 +18,10 @@ export const Button: React.FC<ButtonProps> = ({
   disabled = false,
   variant = 'primary',
   className = '',
-  title
+  title,
+  'aria-expanded': ariaExpanded,
+  'aria-haspopup': ariaHaspopup,
+  'aria-label': ariaLabel
 }) => {
   const getButtonClasses = () => {
     switch (variant) {
@@ -38,6 +44,9 @@ export const Button: React.FC<ButtonProps> = ({
       onClick={onClick}
       disabled={disabled}
       title={title}
+      aria-expanded={ariaExpanded}
+      aria-haspopup={ariaHaspopup}
+      aria-label={ariaLabel}
     >
       {children}
     </button>

@@ -16,26 +16,38 @@ export const ConfigMenu: React.FC<ConfigMenuProps> = ({
 }) => {
   return (
     <div className="config-menu-container" style={{ position: 'relative' }}>
-      <Button 
+      <Button
         variant="navbar"
         title="Opciones"
         onClick={onToggle}
+        aria-expanded={isOpen}
+        aria-haspopup="true"
+        aria-label="Opciones"
       >
         <Icon name="gear" />
       </Button>
 
       {isOpen && (
-        <div className="config-dropdown">
+        <div className="config-dropdown" role="menu">
           <div className="config-dropdown-header">
             <Icon name="gear-fill" className="me-2" />
             Opciones
           </div>
-          
+
           {options.map((option) => (
-            <div 
+            <div
               key={option.id}
               className={`config-dropdown-item ${option.disabled ? 'config-item-disabled' : ''}`}
               onClick={option.disabled ? undefined : option.action}
+              onKeyDown={(e) => {
+                if (!option.disabled && (e.key === 'Enter' || e.key === ' ')) {
+                  e.preventDefault();
+                  option.action();
+                }
+              }}
+              role="menuitem"
+              tabIndex={option.disabled ? -1 : 0}
+              aria-disabled={option.disabled}
             >
               <div className="config-item-icon">
                 <Icon name={option.icon} />
