@@ -153,15 +153,20 @@ export const useComicReader = () => {
         if (archive) {
           console.info('Uncompressing ' + archive.archive_type + ' ...');
 
-          const imageArchive = archive.entries.filter((e) => e.is_file);
-          const newImages: string[] = [];
+          // Orden alfabético por nombre: las entradas pueden descomprimirse en
+          // cualquier orden (el tiempo de descompresión varía por entrada), así
+          // que cada resultado se escribe en su índice fijo, no con push().
+          const imageArchive = archive.entries
+            .filter((e) => e.is_file)
+            .sort((a, b) => a.name.localeCompare(b.name));
+          const newImages: string[] = new Array(imageArchive.length);
           let processedCount = 0;
 
-          imageArchive.forEach((entry) => {
+          imageArchive.forEach((entry, index) => {
             entry.readData((data) => {
               if (data) {
                 const url = URL.createObjectURL(new Blob([data]));
-                newImages.push(url);
+                newImages[index] = url;
                 processedCount++;
 
                 const progress = Math.floor((processedCount / imageArchive.length) * 100);

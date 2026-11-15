@@ -1,4 +1,4 @@
-import { describe, it, expect, afterEach } from 'vitest';
+import { describe, it, expect, afterEach, vi } from 'vitest';
 import { act, renderHook, waitFor, cleanup } from '@testing-library/react';
 import { useComicReader } from './useComicReader';
 
@@ -7,18 +7,19 @@ afterEach(() => {
   delete window.archiveOpenFile;
 });
 
-const fakeArchive = (names: string[]) => ({
+const fakeArchive = (names: string[], delays?: Record<string, number>) => ({
   archive_type: 'zip',
   entries: names.map((name) => ({
     name,
     is_file: true,
     readData: (cb: (data: ArrayBuffer | null, err: unknown) => void) => {
-      // Mismo patrón que uncompress.js: todas las entradas se resuelven
-      // con setTimeout(fn, 0), en orden, imitando la librería real.
-      setTimeout(() => cb(new TextEncoder().encode(name).buffer, null), 0);
+      // Delay configurable por entrada: simula que la descompresión no
+      // siempre termina en el orden en que se pidió (ver issue #28).
+      setTimeout(() => cb(new TextEncoder().encode(name).buffer, null), delays?.[name] ?? 0);
     },
   })),
 });
+
 
 describe('useComicReader.handleFile', () => {
   it('carga todas las páginas de un cómic, en orden, y quita la extensión del nombre', async () => {
@@ -37,6 +38,35 @@ describe('useComicReader.handleFile', () => {
     expect(result.current.images).toHaveLength(3);
     expect(result.current.comicName).toBe('mi-comic');
     expect(result.current.showButtons).toBe(true);
+  });
+
+  it('mantiene el orden de las páginas aunque las entradas terminen de descomprimir en otro orden (issue #28)', async () => {
+    const blobsByUrl = new Map<string, Blob>();
+    const createObjectURLSpy = vi.spyOn(URL, 'createObjectURL').mockImplementation((obj) => {
+      const url = `blob:test-${blobsByUrl.size}`;
+      blobsByUrl.set(url, obj as Blob);
+      return url;
+    });
+
+    window.archiveOpenFile = (_file, _password, cb) => {
+      // '01.png' es la entrada más "pesada": termina de descomprimir última.
+      cb(fakeArchive(['01.png', '02.png', '03.png'], { '01.png': 30, '02.png': 20, '03.png': 5 }), null);
+    };
+
+    const { result } = renderHook(() => useComicReader());
+
+    act(() => {
+      result.current.handleFile(new File(['x'], 'mi-comic.cbz'));
+    });
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    const pageNames = await Promise.all(
+      result.current.images.map((url) => blobsByUrl.get(url)!.text())
+    );
+    expect(pageNames).toEqual(['01.png', '02.png', '03.png']);
+
+    createObjectURLSpy.mockRestore();
   });
 
   it('muestra un error y no se queda cargando si el archivo no es un cómic válido', async () => {
