@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import $ from 'jquery';
+import { processPdfFile } from './pdfProcessor';
 
 export const useComicReader = () => {
   const [images, setImages] = useState<string[]>([]);
@@ -121,7 +122,7 @@ export const useComicReader = () => {
     console.log('try to parse ' + file.name);
 
     // Extraer nombre del archivo sin extensión
-    const fileName = file.name.replace(/\.(cbr|cbz|zip|rar)$/i, '');
+    const fileName = file.name.replace(/\.(cbr|cbz|zip|rar|pdf)$/i, '');
     setComicName(fileName);
 
     setImages([]);
@@ -131,6 +132,22 @@ export const useComicReader = () => {
     setLoadingProgress(0);
 
     $("#comicImg").attr("src", "");
+
+    if (/\.pdf$/i.test(file.name)) {
+      processPdfFile(file, setLoadingProgress)
+        .then((newImages) => {
+          setImages(newImages);
+          setIsLoading(false);
+          setShowButtons(true);
+          drawPanel(0, newImages);
+        })
+        .catch((err: Error) => {
+          console.error(err);
+          doError(err.message);
+          setIsLoading(false);
+        });
+      return;
+    }
 
     if (window.archiveOpenFile) {
       window.archiveOpenFile(file, null, (archive: any, err: any) => {
