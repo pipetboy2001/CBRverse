@@ -14,7 +14,7 @@ export const LoadingModal: React.FC<LoadingModalProps> = ({
 
   return (
     <div className="modal-overlay">
-      <div className="modal-content">
+      <div className="modal-content" role="status" aria-live="polite" aria-busy="true">
         <div className="mb-4">
           <h3 className="text-shadow-lg" style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '0' }}>
             <Icon name="gear-fill" className="me-2" style={{ animation: 'spin 1s linear infinite' }} />

@@ -107,6 +107,7 @@ export const useComicReader = () => {
 
     const alert = document.createElement('div');
     alert.className = 'alert alert-block alert-error';
+    alert.setAttribute('role', 'alert');
 
     const closeButton = document.createElement('button');
     closeButton.className = 'close';
