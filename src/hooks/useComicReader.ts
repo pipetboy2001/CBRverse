@@ -2,6 +2,41 @@ import { useState, useEffect, useRef } from 'react';
 import { processPdfFile } from './pdfProcessor';
 import type { Archive } from '../types';
 
+const loadScript = (src: string): Promise<void> =>
+  new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = src;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error(`Failed to load ${src}`));
+    document.head.appendChild(script);
+  });
+
+// Promesa compartida a nivel de módulo: window.loadArchiveFormats/jszip/libunrar
+// son estado global de la librería vendored, así que la carga también tiene que
+// coordinarse a nivel global. Sin esto, el doble montaje de React StrictMode en
+// desarrollo dispara este efecto dos veces y la segunda vez nunca llega a
+// llamar setupDragAndDrop (ver issue #26).
+let archiveLibsReady: Promise<void> | null = null;
+
+const ensureArchiveLibsLoaded = (): Promise<void> => {
+  if (!archiveLibsReady) {
+    archiveLibsReady = (async () => {
+      if (!window.JSZip) {
+        await loadScript('/lib/jszip.js');
+      }
+      if (!window.loadArchiveFormats) {
+        await loadScript('/lib/uncompress.js');
+      }
+      if (window.loadArchiveFormats) {
+        await new Promise<void>((resolve) => {
+          window.loadArchiveFormats!(['rar', 'zip'], resolve);
+        });
+      }
+    })();
+  }
+  return archiveLibsReady;
+};
+
 export const useComicReader = () => {
   const [images, setImages] = useState<string[]>([]);
   const [currentPanel, setCurrentPanel] = useState<number>(0);
@@ -21,6 +56,8 @@ export const useComicReader = () => {
 
   // Initialize external scripts
   useEffect(() => {
+    let cancelled = false;
+
     const handleDragOver = (e: DragEvent) => {
       e.preventDefault();
       if (e.dataTransfer) {
@@ -49,63 +86,15 @@ export const useComicReader = () => {
       document.addEventListener("drop", handleDrop);
     };
 
-    const loadExternalScripts = async () => {
-      try {
-        // Check if scripts are already loaded to avoid duplicates
-        if (window.JSZip && window.loadArchiveFormats) {
-          setupDragAndDrop();
-          return;
-        }
-
-        if (!window.JSZip) {
-          await new Promise((resolve, reject) => {
-            // Check if script already exists
-            const existingScript = document.querySelector('script[src="/lib/jszip.js"]');
-            if (existingScript) {
-              resolve(undefined);
-              return;
-            }
-
-            const script = document.createElement('script');
-            script.src = '/lib/jszip.js';
-            script.onload = () => resolve(undefined);
-            script.onerror = () => reject(new Error('Failed to load jszip.js'));
-            document.head.appendChild(script);
-          });
-        }
-
-        if (!window.loadArchiveFormats) {
-          await new Promise((resolve, reject) => {
-            // Check if script already exists
-            const existingScript = document.querySelector('script[src="/lib/uncompress.js"]');
-            if (existingScript) {
-              resolve(undefined);
-              return;
-            }
-
-            const script = document.createElement('script');
-            script.src = '/lib/uncompress.js';
-            script.onload = () => resolve(undefined);
-            script.onerror = () => reject(new Error('Failed to load uncompress.js'));
-            document.head.appendChild(script);
-          });
-        }
-
-        if (window.loadArchiveFormats) {
-          window.loadArchiveFormats(['rar', 'zip'], () => {
-            console.log('Archive formats loaded');
-            setupDragAndDrop();
-          });
-        }
-      } catch (error) {
-        console.error('Error loading external scripts:', error);
-      }
-    };
-
-    loadExternalScripts();
+    ensureArchiveLibsLoaded()
+      .then(() => {
+        if (!cancelled) setupDragAndDrop();
+      })
+      .catch((error) => console.error('Error loading external scripts:', error));
 
     // Cleanup function to remove event listeners
     return () => {
+      cancelled = true;
       document.removeEventListener("dragover", handleDragOver);
       document.removeEventListener("drop", handleDrop);
     };
