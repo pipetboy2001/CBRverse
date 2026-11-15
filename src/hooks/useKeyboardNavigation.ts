@@ -41,12 +41,13 @@ export const useKeyboardNavigation = (
             onGoToPage(0);
             scrollToPage(0);
             break;
-          case 'End':
+          case 'End': {
             e.preventDefault();
             const lastPanel = images.length - 1;
             onGoToPage(lastPanel);
             scrollToPage(lastPanel);
             break;
+          }
         }
       } else {
         // Modo página individual original
