@@ -5,6 +5,7 @@ import { useComicReader } from '../hooks/useComicReader';
 import { useViewMode } from '../hooks/useViewMode';
 import { useUIState } from '../hooks/useUIState';
 import { useKeyboardNavigation } from '../hooks/useKeyboardNavigation';
+import { useTheme } from '../hooks/useTheme';
 import { ConfigOption } from '../types';
 
 export const ComicReaderPage: React.FC = () => {
@@ -30,12 +31,14 @@ export const ComicReaderPage: React.FC = () => {
     isFullscreen,
     zoomLevel,
     readingDirection,
+    rotation,
     toggleCascadeMode,
     toggleFullscreen,
     scrollToPage,
     zoomIn,
     zoomOut,
-    toggleReadingDirection
+    toggleReadingDirection,
+    rotateClockwise
   } = useViewMode();
 
   const {
@@ -44,16 +47,18 @@ export const ComicReaderPage: React.FC = () => {
     closeConfigMenu
   } = useUIState();
 
+  const { theme, toggleTheme } = useTheme();
+
   // Navegación por teclado
   useKeyboardNavigation(
     images,
     currentPanel,
     cascadeMode,
-    readingDirection,
     prevPanel,
     nextPanel,
     goToPage,
-    scrollToPage
+    scrollToPage,
+    readingDirection
   );
 
   // Configurar opciones del menú
@@ -98,13 +103,17 @@ export const ComicReaderPage: React.FC = () => {
       }
     },
     {
-      id: 'themes',
-      icon: 'palette',
-      title: 'Temas',
-      description: 'Cambiar tema de la aplicación',
-      status: 'Próximamente',
-      disabled: true,
-      action: () => {}
+      id: 'theme',
+      icon: theme === 'dark' ? 'sun' : 'moon-stars',
+      title: theme === 'dark' ? 'Tema Claro' : 'Tema Oscuro',
+      description: theme === 'dark'
+        ? 'Cambiar a un fondo claro'
+        : 'Volver al fondo oscuro',
+      status: 'Cambiar',
+      action: () => {
+        toggleTheme();
+        closeConfigMenu();
+      }
     }
   ];
 
@@ -131,6 +140,7 @@ export const ComicReaderPage: React.FC = () => {
       cascadeMode={cascadeMode}
       zoomLevel={zoomLevel}
       readingDirection={readingDirection}
+      rotation={rotation}
       showConfigMenu={showConfigMenu}
       configOptions={configOptions}
       onToggleConfigMenu={toggleConfigMenu}
@@ -140,6 +150,7 @@ export const ComicReaderPage: React.FC = () => {
       onNext={nextPanel}
       onZoomIn={zoomIn}
       onZoomOut={zoomOut}
+      onRotate={rotateClockwise}
     />
   );
 };

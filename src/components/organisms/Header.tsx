@@ -17,6 +17,7 @@ interface HeaderProps {
   configOptions: ConfigOption[];
   onZoomIn: () => void;
   onZoomOut: () => void;
+  onRotate: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -31,7 +32,8 @@ export const Header: React.FC<HeaderProps> = ({
   onCloseComic,
   configOptions,
   onZoomIn,
-  onZoomOut
+  onZoomOut,
+  onRotate
 }) => {
   return (
     <nav className="navbar fixed-top navbar-custom">
@@ -77,6 +79,16 @@ export const Header: React.FC<HeaderProps> = ({
               <Icon name="zoom-in" />
             </Button>
           </div>
+
+          {/* Rotar página */}
+          <Button
+            variant="navbar"
+            onClick={onRotate}
+            title="Rotar página 90°"
+            aria-label="Rotar página 90°"
+          >
+            <Icon name="arrow-clockwise" />
+          </Button>
 
           {/* Botón de configuración con menú desplegable */}
           <ConfigMenu

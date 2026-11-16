@@ -16,6 +16,7 @@ interface ComicReaderTemplateProps {
   cascadeMode: boolean;
   zoomLevel: number;
   readingDirection: ReadingDirection;
+  rotation: 0 | 90 | 180 | 270;
 
   // UI state
   showConfigMenu: boolean;
@@ -31,6 +32,7 @@ interface ComicReaderTemplateProps {
   onNext: () => void;
   onZoomIn: () => void;
   onZoomOut: () => void;
+  onRotate: () => void;
 }
 
 export const ComicReaderTemplate: React.FC<ComicReaderTemplateProps> = ({
@@ -43,6 +45,7 @@ export const ComicReaderTemplate: React.FC<ComicReaderTemplateProps> = ({
   cascadeMode,
   zoomLevel,
   readingDirection,
+  rotation,
   showConfigMenu,
   configOptions,
   onToggleConfigMenu,
@@ -51,7 +54,8 @@ export const ComicReaderTemplate: React.FC<ComicReaderTemplateProps> = ({
   onPrevious,
   onNext,
   onZoomIn,
-  onZoomOut
+  onZoomOut,
+  onRotate
 }) => {
   return (
     <div className="min-h-screen bg-gradient-main">
@@ -69,6 +73,7 @@ export const ComicReaderTemplate: React.FC<ComicReaderTemplateProps> = ({
         configOptions={configOptions}
         onZoomIn={onZoomIn}
         onZoomOut={onZoomOut}
+        onRotate={onRotate}
       />
 
       {/* Contenido principal */}
@@ -95,6 +100,7 @@ export const ComicReaderTemplate: React.FC<ComicReaderTemplateProps> = ({
             cascadeMode={cascadeMode}
             zoomLevel={zoomLevel}
             readingDirection={readingDirection}
+            rotation={rotation}
             onPrevious={onPrevious}
             onNext={onNext}
             onZoomIn={onZoomIn}

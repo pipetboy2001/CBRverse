@@ -9,6 +9,7 @@ interface ComicViewerProps {
   cascadeMode: boolean;
   zoomLevel: number;
   readingDirection: ReadingDirection;
+  rotation: 0 | 90 | 180 | 270;
   onPrevious: () => void;
   onNext: () => void;
   onZoomIn: () => void;
@@ -21,6 +22,7 @@ export const ComicViewer: React.FC<ComicViewerProps> = ({
   cascadeMode,
   zoomLevel,
   readingDirection,
+  rotation,
   onPrevious,
   onNext,
   onZoomIn,
@@ -30,9 +32,13 @@ export const ComicViewer: React.FC<ComicViewerProps> = ({
 
   if (images.length === 0) return null;
 
-  const zoomStyle: React.CSSProperties = {
+  // shortcut: rotar solo visualmente (transform), no reajusta el layout
+  // (a 90/270 una pagina no cuadrada puede desbordar el contenedor).
+  // Subir a medir y swapear ancho/alto del contenedor si eso molesta.
+  const imageStyle: React.CSSProperties = {
     width: `${zoomLevel}%`,
-    maxWidth: zoomLevel > 100 ? 'none' : '100%'
+    maxWidth: zoomLevel > 100 ? 'none' : '100%',
+    ...(rotation !== 0 ? { transform: `rotate(${rotation}deg)` } : {})
   };
 
   // En manga la mitad izquierda avanza y la derecha retrocede; en comic es al revés
@@ -53,7 +59,7 @@ export const ComicViewer: React.FC<ComicViewerProps> = ({
             id="comicImg"
             src={images[currentPanel] || ""}
             alt="comic panel"
-            style={zoomStyle}
+            style={imageStyle}
           />
           <button
             type="button"
@@ -89,7 +95,7 @@ export const ComicViewer: React.FC<ComicViewerProps> = ({
                 alt={`Página ${index + 1}`}
                 className="cascade-image"
                 loading="lazy"
-                style={zoomStyle}
+                style={imageStyle}
               />
             </div>
           ))}
