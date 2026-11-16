@@ -241,6 +241,21 @@ body {
   padding: 0 10px;
 }
 
+.navbar-zoom-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.navbar-zoom-level {
+  color: #e0e0e0;
+  font-size: 13px;
+  font-weight: 600;
+  min-width: 42px;
+  text-align: center;
+}
+
 .title-text {
   display: block;
   font-size: 16px;
@@ -532,6 +547,11 @@ body {
   animation: progress-animation 2s linear infinite;
 }
 
+/* Permite desplazamiento horizontal cuando el zoom supera el ancho del contenedor */
+.zoom-scroll-area {
+  overflow-x: auto;
+}
+
 /* Imagen del cómic - Colores naturales con marco sutil */
 .comic-image {
   width: 100%;
@@ -661,11 +681,18 @@ body {
     padding: 6px 8px;
     font-size: 14px;
   }
-  
+
+  .navbar-zoom-controls button {
+    min-width: 32px;
+    height: 32px;
+    padding: 4px 6px;
+    font-size: 13px;
+  }
+
   .title-text {
     font-size: 14px;
   }
-  
+
   .page-info {
     font-size: 11px;
   }
@@ -708,11 +735,22 @@ body {
     padding: 4px 6px;
     font-size: 12px;
   }
-  
+
+  .navbar-zoom-controls button {
+    min-width: 28px;
+    height: 28px;
+    padding: 3px 5px;
+    font-size: 11px;
+  }
+
+  .navbar-zoom-level {
+    display: none;
+  }
+
   .title-text {
     font-size: 12px;
   }
-  
+
   .page-info {
     font-size: 10px;
   }
@@ -729,14 +767,14 @@ body {
   border: none;
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
   z-index: 1000;
-  padding: 15px 0;
+  padding: 8px 0;
   border-top: 1px solid rgba(60, 60, 60, 0.3);
 }
 
 .footer-content {
   background: rgba(40, 40, 40, 0.8);
   border-radius: 15px;
-  padding: 15px;
+  padding: 10px;
   margin: 0 15px;
   backdrop-filter: blur(5px);
   border: 1px solid rgba(80, 80, 80, 0.3);
@@ -765,7 +803,7 @@ body {
   background: rgba(60, 60, 60, 0.8) !important;
   border: 1px solid rgba(100, 100, 100, 0.3) !important;
   color: #e0e0e0 !important;
-  padding: 10px 20px !important;
+  padding: 8px 18px !important;
   border-radius: 15px !important;
   font-weight: 600 !important;
   transition: all 0.3s ease !important;
@@ -791,7 +829,7 @@ body {
 
 /* Espaciado para el footer */
 .pb-footer {
-  padding-bottom: 100px;
+  padding-bottom: 80px;
 }
 
 /* Modo cascada - todas las imágenes en secuencia */
@@ -806,7 +844,8 @@ body {
   position: relative;
   margin-bottom: 20px;
   border-radius: 8px;
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
   border: 1px solid rgba(80, 80, 80, 0.3);
 }

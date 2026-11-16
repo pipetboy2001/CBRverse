@@ -14,19 +14,22 @@ interface ComicReaderTemplateProps {
   
   // View mode
   cascadeMode: boolean;
-  
+  zoomLevel: number;
+
   // UI state
   showConfigMenu: boolean;
-  
+
   // Config options
   configOptions: ConfigOption[];
-  
+
   // Event handlers
   onToggleConfigMenu: () => void;
   onCloseConfigMenu: () => void;
   onCloseComic: () => void;
   onPrevious: () => void;
   onNext: () => void;
+  onZoomIn: () => void;
+  onZoomOut: () => void;
 }
 
 export const ComicReaderTemplate: React.FC<ComicReaderTemplateProps> = ({
@@ -37,27 +40,33 @@ export const ComicReaderTemplate: React.FC<ComicReaderTemplateProps> = ({
   loadingProgress,
   showButtons,
   cascadeMode,
+  zoomLevel,
   showConfigMenu,
   configOptions,
   onToggleConfigMenu,
   onCloseConfigMenu,
   onCloseComic,
   onPrevious,
-  onNext
+  onNext,
+  onZoomIn,
+  onZoomOut
 }) => {
   return (
     <div className="min-h-screen bg-gradient-main">
       {/* Header */}
-      <Header 
+      <Header
         comicName={comicName}
         currentPanel={currentPanel}
         totalPanels={images.length}
         cascadeMode={cascadeMode}
+        zoomLevel={zoomLevel}
         showConfigMenu={showConfigMenu}
         onToggleConfigMenu={onToggleConfigMenu}
         onCloseConfigMenu={onCloseConfigMenu}
         onCloseComic={onCloseComic}
         configOptions={configOptions}
+        onZoomIn={onZoomIn}
+        onZoomOut={onZoomOut}
       />
 
       {/* Contenido principal */}
@@ -78,10 +87,11 @@ export const ComicReaderTemplate: React.FC<ComicReaderTemplateProps> = ({
           />
 
           {/* Comic Viewer */}
-          <ComicViewer 
+          <ComicViewer
             images={images}
             currentPanel={currentPanel}
             cascadeMode={cascadeMode}
+            zoomLevel={zoomLevel}
           />
         </div>
       </div>

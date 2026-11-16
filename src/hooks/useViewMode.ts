@@ -1,8 +1,14 @@
 import { useState, useEffect } from 'react';
 
+export const ZOOM_MIN = 50;
+export const ZOOM_MAX = 250;
+const ZOOM_STEP = 10;
+const ZOOM_DEFAULT = 100;
+
 export const useViewMode = () => {
   const [cascadeMode, setCascadeMode] = useState<boolean>(false);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
+  const [zoomLevel, setZoomLevel] = useState<number>(ZOOM_DEFAULT);
 
   // Detectar cambios en el modo pantalla completa
   useEffect(() => {
@@ -43,11 +49,27 @@ export const useViewMode = () => {
     }
   };
 
+  const zoomIn = () => {
+    setZoomLevel((prev) => Math.min(ZOOM_MAX, prev + ZOOM_STEP));
+  };
+
+  const zoomOut = () => {
+    setZoomLevel((prev) => Math.max(ZOOM_MIN, prev - ZOOM_STEP));
+  };
+
+  const resetZoom = () => {
+    setZoomLevel(ZOOM_DEFAULT);
+  };
+
   return {
     cascadeMode,
     isFullscreen,
+    zoomLevel,
     toggleCascadeMode,
     toggleFullscreen,
-    scrollToPage
+    scrollToPage,
+    zoomIn,
+    zoomOut,
+    resetZoom
   };
 };
