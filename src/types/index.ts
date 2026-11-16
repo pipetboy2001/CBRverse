@@ -16,6 +16,7 @@ export interface ViewMode {
   isFullscreen: boolean;
   zoomLevel: number;
   readingDirection: ReadingDirection;
+  rotation: 0 | 90 | 180 | 270;
 }
 
 export interface UIState {

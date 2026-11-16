@@ -11,6 +11,7 @@ export const useViewMode = () => {
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [zoomLevel, setZoomLevel] = useState<number>(ZOOM_DEFAULT);
   const [readingDirection, setReadingDirection] = useState<ReadingDirection>('comic');
+  const [rotation, setRotation] = useState<0 | 90 | 180 | 270>(0);
 
   // Detectar cambios en el modo pantalla completa
   useEffect(() => {
@@ -67,17 +68,23 @@ export const useViewMode = () => {
     setReadingDirection((prev) => (prev === 'comic' ? 'manga' : 'comic'));
   };
 
+  const rotateClockwise = () => {
+    setRotation((prev) => ((prev + 90) % 360) as 0 | 90 | 180 | 270);
+  };
+
   return {
     cascadeMode,
     isFullscreen,
     zoomLevel,
     readingDirection,
+    rotation,
     toggleCascadeMode,
     toggleFullscreen,
     scrollToPage,
     zoomIn,
     zoomOut,
     resetZoom,
-    toggleReadingDirection
+    toggleReadingDirection,
+    rotateClockwise
   };
 };
