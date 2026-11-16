@@ -18,7 +18,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
         <div style={{ fontSize: '3rem', marginBottom: '1rem', display: 'block', filter: 'drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2))' }}>
           📖
         </div>
-        <h1 className="text-shadow-lg" style={{ fontSize: '2.5rem', fontWeight: 'bold', margin: '0 0 1rem 0', color: 'white' }}>
+        <h1 className="text-shadow-lg" style={{ fontSize: '2.5rem', fontWeight: 'bold', margin: '0 0 1rem 0' }}>
           CBRVerse
         </h1>
         <p className="text-shadow-sm" style={{ fontSize: '1rem', marginBottom: '1.5rem', opacity: 0.9 }}>
@@ -45,12 +45,12 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
             onChange={onFilesChange}
           />
           
-          <div style={{ 
+          <div style={{
             padding: '0.8rem',
-            background: 'rgba(255, 255, 255, 0.1)',
+            background: 'var(--color-surface-btn)',
             borderRadius: '8px',
             fontSize: '0.85rem',
-            border: '1px solid rgba(255, 255, 255, 0.1)'
+            border: '1px solid var(--color-border-subtle)'
           }}>
             💡 <span style={{ opacity: 0.8 }}>También puedes arrastrar archivos CBR/CBZ directamente aquí</span>
           </div>
