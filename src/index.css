@@ -283,6 +283,21 @@ body {
   padding: 0 10px;
 }
 
+.navbar-zoom-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.navbar-zoom-level {
+  color: #e0e0e0;
+  font-size: 13px;
+  font-weight: 600;
+  min-width: 42px;
+  text-align: center;
+}
+
 .title-text {
   display: block;
   font-size: 16px;
@@ -574,6 +589,60 @@ body {
   animation: progress-animation 2s linear infinite;
 }
 
+/* Permite desplazamiento horizontal cuando el zoom supera el ancho del contenedor */
+.zoom-scroll-area {
+  overflow-x: auto;
+}
+
+/* Tap-to-read: mitades invisibles sobre la imagen para avanzar/retroceder */
+.tap-read-area {
+  position: relative;
+}
+
+.tap-zone {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  color: rgba(255, 255, 255, 0);
+  font-size: 32px;
+  transition: color 0.2s ease, background 0.2s ease;
+  z-index: 5;
+}
+
+.tap-zone-left {
+  left: 0;
+  justify-content: flex-start;
+  padding-left: 16px;
+}
+
+.tap-zone-right {
+  right: 0;
+  justify-content: flex-end;
+  padding-right: 16px;
+}
+
+.tap-zone-left:hover:not(:disabled) {
+  background: linear-gradient(to right, rgba(0, 0, 0, 0.25), transparent);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.tap-zone-right:hover:not(:disabled) {
+  background: linear-gradient(to left, rgba(0, 0, 0, 0.25), transparent);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.tap-zone:disabled {
+  cursor: default;
+}
+
 /* Imagen del cómic - Colores naturales con marco sutil */
 .comic-image {
   width: 100%;
@@ -666,31 +735,6 @@ body {
     margin: 0 1rem;
   }
   
-  .footer-controls {
-    flex-direction: row !important;
-    gap: 5px !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-  }
-  
-  .footer-page-counter {
-    order: 0 !important;
-    margin-bottom: 0 !important;
-    font-size: 12px !important;
-    padding: 6px 10px !important;
-    flex-shrink: 0 !important;
-  }
-  
-  .footer-btn {
-    padding: 6px 12px !important;
-    font-size: 12px !important;
-    flex-shrink: 0 !important;
-  }
-
-  .footer-btn i {
-    font-size: 10px !important;
-  }
-
   /* Navbar responsivo */
   .navbar-content {
     padding: 0 10px;
@@ -703,11 +747,18 @@ body {
     padding: 6px 8px;
     font-size: 14px;
   }
-  
+
+  .navbar-zoom-controls button {
+    min-width: 32px;
+    height: 32px;
+    padding: 4px 6px;
+    font-size: 13px;
+  }
+
   .title-text {
     font-size: 14px;
   }
-  
+
   .page-info {
     font-size: 11px;
   }
@@ -723,21 +774,6 @@ body {
     font-size: 1.5rem;
   }
   
-  .footer-content {
-    margin: 0 5px;
-    padding: 8px;
-  }
-  
-  .footer-page-counter {
-    font-size: 10px !important;
-    padding: 4px 8px !important;
-  }
-
-  .footer-btn {
-    padding: 4px 8px !important;
-    font-size: 10px !important;
-  }
-
   /* Navbar muy pequeño */
   .navbar-content {
     padding: 0 8px;
@@ -750,90 +786,25 @@ body {
     padding: 4px 6px;
     font-size: 12px;
   }
-  
+
+  .navbar-zoom-controls button {
+    min-width: 28px;
+    height: 28px;
+    padding: 3px 5px;
+    font-size: 11px;
+  }
+
+  .navbar-zoom-level {
+    display: none;
+  }
+
   .title-text {
     font-size: 12px;
   }
-  
+
   .page-info {
     font-size: 10px;
   }
-}
-
-/* Footer fijo */
-.footer-fixed {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: var(--gradient-navbar);
-  backdrop-filter: blur(10px);
-  border: none;
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
-  z-index: 1000;
-  padding: 15px 0;
-  border-top: 1px solid var(--color-border-subtle);
-}
-
-.footer-content {
-  background: var(--color-surface-strong);
-  border-radius: 15px;
-  padding: 15px;
-  margin: 0 15px;
-  backdrop-filter: blur(5px);
-  border: 1px solid var(--color-border-subtle);
-}
-
-.footer-controls {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.footer-page-counter {
-  background: var(--color-surface-btn);
-  color: var(--color-text-primary);
-  padding: 8px 16px;
-  border-radius: 15px;
-  font-weight: bold;
-  font-size: 14px;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
-  border: 1px solid var(--color-border);
-}
-
-.footer-btn {
-  background: var(--color-surface-btn) !important;
-  border: 1px solid var(--color-border) !important;
-  color: var(--color-text-primary) !important;
-  padding: 10px 20px !important;
-  border-radius: 15px !important;
-  font-weight: 600 !important;
-  transition: all 0.3s ease !important;
-  backdrop-filter: blur(5px) !important;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5) !important;
-}
-
-.footer-btn:hover:not(:disabled) {
-  background: var(--color-surface-btn-hover) !important;
-  transform: translateY(-2px) !important;
-  box-shadow: 0 6px 20px rgba(60, 60, 60, 0.4) !important;
-  border-color: var(--color-border-hover) !important;
-}
-
-.footer-btn:disabled {
-  background: rgba(40, 40, 40, 0.6) !important;
-  color: rgba(140, 140, 140, 0.6) !important;
-  cursor: not-allowed !important;
-  transform: none !important;
-  box-shadow: none !important;
-  border-color: rgba(60, 60, 60, 0.3) !important;
-}
-
-/* Espaciado para el footer */
-.pb-footer {
-  padding-bottom: 100px;
 }
 
 /* Modo cascada - todas las imágenes en secuencia */
@@ -848,7 +819,8 @@ body {
   position: relative;
   margin-bottom: 20px;
   border-radius: 8px;
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
   border: 1px solid rgba(80, 80, 80, 0.3);
 }

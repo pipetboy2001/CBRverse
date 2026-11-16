@@ -1,8 +1,16 @@
 import { useState, useEffect } from 'react';
+import type { ReadingDirection } from '../types';
+
+export const ZOOM_MIN = 50;
+export const ZOOM_MAX = 250;
+const ZOOM_STEP = 10;
+const ZOOM_DEFAULT = 100;
 
 export const useViewMode = () => {
   const [cascadeMode, setCascadeMode] = useState<boolean>(false);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
+  const [zoomLevel, setZoomLevel] = useState<number>(ZOOM_DEFAULT);
+  const [readingDirection, setReadingDirection] = useState<ReadingDirection>('comic');
   const [rotation, setRotation] = useState<0 | 90 | 180 | 270>(0);
 
   // Detectar cambios en el modo pantalla completa
@@ -44,6 +52,22 @@ export const useViewMode = () => {
     }
   };
 
+  const zoomIn = () => {
+    setZoomLevel((prev) => Math.min(ZOOM_MAX, prev + ZOOM_STEP));
+  };
+
+  const zoomOut = () => {
+    setZoomLevel((prev) => Math.max(ZOOM_MIN, prev - ZOOM_STEP));
+  };
+
+  const resetZoom = () => {
+    setZoomLevel(ZOOM_DEFAULT);
+  };
+
+  const toggleReadingDirection = () => {
+    setReadingDirection((prev) => (prev === 'comic' ? 'manga' : 'comic'));
+  };
+
   const rotateClockwise = () => {
     setRotation((prev) => ((prev + 90) % 360) as 0 | 90 | 180 | 270);
   };
@@ -51,10 +75,16 @@ export const useViewMode = () => {
   return {
     cascadeMode,
     isFullscreen,
+    zoomLevel,
+    readingDirection,
     rotation,
     toggleCascadeMode,
     toggleFullscreen,
     scrollToPage,
+    zoomIn,
+    zoomOut,
+    resetZoom,
+    toggleReadingDirection,
     rotateClockwise
   };
 };
