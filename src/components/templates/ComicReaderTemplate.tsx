@@ -1,7 +1,7 @@
 import React from 'react';
-import { Header, ComicViewer, Footer } from '../organisms';
-import { LoadingModal, InfoAlert } from '../molecules';
-import { ConfigOption } from '../../types';
+import { Header, ComicViewer } from '../organisms';
+import { LoadingModal, InfoAlert, ErrorAlert } from '../molecules';
+import { ConfigOption, ReadingDirection } from '../../types';
 
 interface ComicReaderTemplateProps {
   // Comic state
@@ -14,19 +14,29 @@ interface ComicReaderTemplateProps {
   
   // View mode
   cascadeMode: boolean;
-  
+  zoomLevel: number;
+  readingDirection: ReadingDirection;
+  rotation: 0 | 90 | 180 | 270;
+
   // UI state
   showConfigMenu: boolean;
-  
+
   // Config options
   configOptions: ConfigOption[];
-  
+
   // Event handlers
   onToggleConfigMenu: () => void;
   onCloseConfigMenu: () => void;
   onCloseComic: () => void;
   onPrevious: () => void;
   onNext: () => void;
+  onZoomIn: () => void;
+  onZoomOut: () => void;
+  onRotate: () => void;
+
+  // Errores
+  errorMessage: string | null;
+  onDismissError: () => void;
 }
 
 export const ComicReaderTemplate: React.FC<ComicReaderTemplateProps> = ({
@@ -37,31 +47,43 @@ export const ComicReaderTemplate: React.FC<ComicReaderTemplateProps> = ({
   loadingProgress,
   showButtons,
   cascadeMode,
+  zoomLevel,
+  readingDirection,
+  rotation,
   showConfigMenu,
   configOptions,
   onToggleConfigMenu,
   onCloseConfigMenu,
   onCloseComic,
   onPrevious,
-  onNext
+  onNext,
+  onZoomIn,
+  onZoomOut,
+  onRotate,
+  errorMessage,
+  onDismissError
 }) => {
   return (
     <div className="min-h-screen bg-gradient-main">
       {/* Header */}
-      <Header 
+      <Header
         comicName={comicName}
         currentPanel={currentPanel}
         totalPanels={images.length}
         cascadeMode={cascadeMode}
+        zoomLevel={zoomLevel}
         showConfigMenu={showConfigMenu}
         onToggleConfigMenu={onToggleConfigMenu}
         onCloseConfigMenu={onCloseConfigMenu}
         onCloseComic={onCloseComic}
         configOptions={configOptions}
+        onZoomIn={onZoomIn}
+        onZoomOut={onZoomOut}
+        onRotate={onRotate}
       />
 
       {/* Contenido principal */}
-      <div className={`pt-20 ${cascadeMode ? '' : 'pb-footer'}`}>
+      <div className="pt-20">
         <div className="glass-container container mx-auto" style={{ maxWidth: '1200px' }}>
           {/* Alertas informativas */}
           {showButtons && (
@@ -69,32 +91,27 @@ export const ComicReaderTemplate: React.FC<ComicReaderTemplateProps> = ({
           )}
 
           <output id="list"></output>
-          <div id="alertArea"></div>
+          <ErrorAlert message={errorMessage} onDismiss={onDismissError} />
 
           {/* Loading Modal */}
-          <LoadingModal 
+          <LoadingModal
             isVisible={isLoading}
             progress={loadingProgress}
           />
 
           {/* Comic Viewer */}
-          <ComicViewer 
+          <ComicViewer
             images={images}
             currentPanel={currentPanel}
             cascadeMode={cascadeMode}
+            zoomLevel={zoomLevel}
+            readingDirection={readingDirection}
+            rotation={rotation}
+            onPrevious={onPrevious}
+            onNext={onNext}
           />
         </div>
       </div>
-
-      {/* Footer */}
-      <Footer 
-        currentPanel={currentPanel}
-        totalPanels={images.length}
-        onPrevious={onPrevious}
-        onNext={onNext}
-        cascadeMode={cascadeMode}
-        showButtons={showButtons}
-      />
     </div>
   );
 };

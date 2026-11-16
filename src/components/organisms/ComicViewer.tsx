@@ -1,29 +1,77 @@
 import React from 'react';
-import { ComicImage } from '../atoms';
+import { ComicImage, Icon } from '../atoms';
+import type { ReadingDirection } from '../../types';
 
 interface ComicViewerProps {
   images: string[];
   currentPanel: number;
   cascadeMode: boolean;
+  zoomLevel: number;
+  readingDirection: ReadingDirection;
+  rotation: 0 | 90 | 180 | 270;
+  onPrevious: () => void;
+  onNext: () => void;
 }
 
 export const ComicViewer: React.FC<ComicViewerProps> = ({
   images,
   currentPanel,
-  cascadeMode
+  cascadeMode,
+  zoomLevel,
+  readingDirection,
+  rotation,
+  onPrevious,
+  onNext
 }) => {
   if (images.length === 0) return null;
+
+  // shortcut: rotar solo visualmente (transform), no reajusta el layout
+  // (a 90/270 una pagina no cuadrada puede desbordar el contenedor).
+  // Subir a medir y swapear ancho/alto del contenedor si eso molesta.
+  const imageStyle: React.CSSProperties = {
+    width: `${zoomLevel}%`,
+    maxWidth: zoomLevel > 100 ? 'none' : '100%',
+    ...(rotation !== 0 ? { transform: `rotate(${rotation}deg)` } : {})
+  };
+
+  // En manga la mitad izquierda avanza y la derecha retrocede; en comic es al revés
+  const manga = readingDirection === 'manga';
+  const leftAction = manga ? onNext : onPrevious;
+  const rightAction = manga ? onPrevious : onNext;
+  const leftDisabled = manga ? currentPanel >= images.length - 1 : currentPanel === 0;
+  const rightDisabled = manga ? currentPanel === 0 : currentPanel >= images.length - 1;
+  const leftLabel = manga ? 'Página siguiente' : 'Página anterior';
+  const rightLabel = manga ? 'Página anterior' : 'Página siguiente';
 
   return (
     <>
       {/* Modo página individual */}
       {!cascadeMode && (
-        <div className="text-center mb-4">
-          <ComicImage 
-            id="comicImg" 
+        <div className="text-center mb-4 zoom-scroll-area tap-read-area">
+          <ComicImage
+            id="comicImg"
             src={images[currentPanel] || ""}
             alt="comic panel"
+            style={imageStyle}
           />
+          <button
+            type="button"
+            className="tap-zone tap-zone-left"
+            onClick={leftAction}
+            disabled={leftDisabled}
+            aria-label={leftLabel}
+          >
+            <Icon name="chevron-left" />
+          </button>
+          <button
+            type="button"
+            className="tap-zone tap-zone-right"
+            onClick={rightAction}
+            disabled={rightDisabled}
+            aria-label={rightLabel}
+          >
+            <Icon name="chevron-right" />
+          </button>
         </div>
       )}
 
@@ -31,15 +79,16 @@ export const ComicViewer: React.FC<ComicViewerProps> = ({
       {cascadeMode && (
         <div className="cascade-container">
           {images.map((imageSrc, index) => (
-            <div key={index} className="cascade-page">
+            <div key={index} className="cascade-page zoom-scroll-area">
               <div className="page-number">
                 Página {index + 1}
               </div>
-              <ComicImage 
+              <ComicImage
                 src={imageSrc}
                 alt={`Página ${index + 1}`}
                 className="cascade-image"
                 loading="lazy"
+                style={imageStyle}
               />
             </div>
           ))}

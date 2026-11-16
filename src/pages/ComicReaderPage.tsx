@@ -1,10 +1,11 @@
 import React from 'react';
-import { WelcomeScreen } from '../components/organisms';
+import { WelcomeScreen, PasswordPrompt } from '../components/organisms';
 import { ComicReaderTemplate } from '../components/templates';
 import { useComicReader } from '../hooks/useComicReader';
 import { useViewMode } from '../hooks/useViewMode';
 import { useUIState } from '../hooks/useUIState';
 import { useKeyboardNavigation } from '../hooks/useKeyboardNavigation';
+import { useTheme } from '../hooks/useTheme';
 import { ConfigOption } from '../types';
 
 export const ComicReaderPage: React.FC = () => {
@@ -16,21 +17,34 @@ export const ComicReaderPage: React.FC = () => {
     isLoading,
     loadingProgress,
     showButtons,
+    passwordRequired,
+    passwordError,
+    errorMessage,
     fileInputRef,
     handleFilesChange,
     triggerFileInput,
     closeComic,
     prevPanel,
     nextPanel,
-    goToPage
+    goToPage,
+    submitPassword,
+    cancelPassword,
+    clearError
   } = useComicReader();
 
   const {
     cascadeMode,
     isFullscreen,
+    zoomLevel,
+    readingDirection,
+    rotation,
     toggleCascadeMode,
     toggleFullscreen,
-    scrollToPage
+    scrollToPage,
+    zoomIn,
+    zoomOut,
+    toggleReadingDirection,
+    rotateClockwise
   } = useViewMode();
 
   const {
@@ -38,6 +52,8 @@ export const ComicReaderPage: React.FC = () => {
     toggleConfigMenu,
     closeConfigMenu
   } = useUIState();
+
+  const { theme, toggleTheme } = useTheme();
 
   // Navegación por teclado
   useKeyboardNavigation(
@@ -47,7 +63,8 @@ export const ComicReaderPage: React.FC = () => {
     prevPanel,
     nextPanel,
     goToPage,
-    scrollToPage
+    scrollToPage,
+    readingDirection
   );
 
   // Configurar opciones del menú
@@ -79,23 +96,54 @@ export const ComicReaderPage: React.FC = () => {
       }
     },
     {
-      id: 'themes',
-      icon: 'palette',
-      title: 'Temas',
-      description: 'Cambiar tema de la aplicación',
-      status: 'Próximamente',
-      disabled: true,
-      action: () => {}
+      id: 'reading-direction',
+      icon: readingDirection === 'manga' ? 'arrow-left-circle' : 'arrow-right-circle',
+      title: readingDirection === 'manga' ? 'Modo Manga' : 'Modo Comic',
+      description: readingDirection === 'manga'
+        ? 'Tocar la izquierda avanza (lectura derecha a izquierda)'
+        : 'Tocar la derecha avanza (lectura izquierda a derecha)',
+      status: 'Cambiar',
+      action: () => {
+        toggleReadingDirection();
+        closeConfigMenu();
+      }
+    },
+    {
+      id: 'theme',
+      icon: theme === 'dark' ? 'sun' : 'moon-stars',
+      title: theme === 'dark' ? 'Tema Claro' : 'Tema Oscuro',
+      description: theme === 'dark'
+        ? 'Cambiar a un fondo claro'
+        : 'Volver al fondo oscuro',
+      status: 'Cambiar',
+      action: () => {
+        toggleTheme();
+        closeConfigMenu();
+      }
     }
   ];
+
+  // Archivo protegido con contraseña: pedirla antes de mostrar cualquier otra pantalla
+  if (passwordRequired) {
+    return (
+      <PasswordPrompt
+        fileName={comicName}
+        errorMessage={passwordError}
+        onSubmit={submitPassword}
+        onCancel={cancelPassword}
+      />
+    );
+  }
 
   // Pantalla de bienvenida cuando no hay cómics cargados
   if (!showButtons && !isLoading) {
     return (
-      <WelcomeScreen 
+      <WelcomeScreen
         fileInputRef={fileInputRef}
         onFilesChange={handleFilesChange}
         onTriggerFileInput={triggerFileInput}
+        errorMessage={errorMessage}
+        onDismissError={clearError}
       />
     );
   }
@@ -110,6 +158,9 @@ export const ComicReaderPage: React.FC = () => {
       loadingProgress={loadingProgress}
       showButtons={showButtons}
       cascadeMode={cascadeMode}
+      zoomLevel={zoomLevel}
+      readingDirection={readingDirection}
+      rotation={rotation}
       showConfigMenu={showConfigMenu}
       configOptions={configOptions}
       onToggleConfigMenu={toggleConfigMenu}
@@ -117,6 +168,11 @@ export const ComicReaderPage: React.FC = () => {
       onCloseComic={closeComic}
       onPrevious={prevPanel}
       onNext={nextPanel}
+      onZoomIn={zoomIn}
+      onZoomOut={zoomOut}
+      onRotate={rotateClockwise}
+      errorMessage={errorMessage}
+      onDismissError={clearError}
     />
   );
 };

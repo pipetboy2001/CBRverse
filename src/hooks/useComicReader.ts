@@ -36,6 +36,22 @@ const ensureArchiveLibsLoaded = (): Promise<void> => {
   return archiveLibsReady;
 };
 
+// Progreso de lectura por cómic, identificado por nombre+tamaño de archivo
+// (no hay hash de contenido ni biblioteca persistente todavía).
+const PROGRESS_STORAGE_PREFIX = 'cbrverse:lastPage:';
+
+const getComicKey = (file: File) => `${file.name}:${file.size}`;
+
+const getSavedPage = (key: string, totalPages: number): number => {
+  try {
+    const raw = localStorage.getItem(PROGRESS_STORAGE_PREFIX + key);
+    const page = raw ? parseInt(raw, 10) : NaN;
+    return Number.isInteger(page) && page >= 0 && page < totalPages ? page : 0;
+  } catch {
+    return 0;
+  }
+};
+
 export const useComicReader = () => {
   const [images, setImages] = useState<string[]>([]);
   const [currentPanel, setCurrentPanel] = useState<number>(0);
@@ -43,8 +59,23 @@ export const useComicReader = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [loadingProgress, setLoadingProgress] = useState<number>(0);
   const [showButtons, setShowButtons] = useState<boolean>(false);
+  const [passwordRequired, setPasswordRequired] = useState<boolean>(false);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const pendingFileRef = useRef<File | null>(null);
+  const comicKeyRef = useRef<string | null>(null);
+
+  // Guarda la página actual para retomar en la misma donde se quedó
+  useEffect(() => {
+    if (!comicKeyRef.current || images.length === 0) return;
+    try {
+      localStorage.setItem(PROGRESS_STORAGE_PREFIX + comicKeyRef.current, String(currentPanel));
+    } catch {
+      // localStorage puede no estar disponible (ej. navegación privada); no es crítico
+    }
+  }, [currentPanel, images.length]);
 
   // Libera las blob URLs de las páginas cada vez que se reemplazan (nuevo cómic, cierre, o unmount)
   useEffect(() => {
@@ -53,25 +84,19 @@ export const useComicReader = () => {
     };
   }, [images]);
 
+  // Antes insertaba el alert a mano en el DOM (#alertArea), pero esa pantalla
+  // puede desmontarse/remontarse como parte del mismo cambio de estado que
+  // dispara el error (ej. isLoading pasa a false y se vuelve a la pantalla de
+  // bienvenida), asi que el nodo donde se insertaba podia ya no existir mas,
+  // ni con un setTimeout(0) de por medio (la carrera con el commit de React
+  // no es determinista). Ahora es estado de React: cada pantalla que lo
+  // necesite lo renderiza ella misma via errorMessage/clearError.
   const doError = (message: string) => {
-    const alertArea = document.getElementById('alertArea');
-    if (!alertArea) return;
-    alertArea.replaceChildren();
+    setErrorMessage(message);
+  };
 
-    const alert = document.createElement('div');
-    alert.className = 'alert alert-block alert-error';
-    alert.setAttribute('role', 'alert');
-
-    const closeButton = document.createElement('button');
-    closeButton.className = 'close';
-    closeButton.textContent = '×';
-    closeButton.onclick = () => alert.remove();
-
-    const text = document.createElement('p');
-    text.textContent = message;
-
-    alert.append(closeButton, text);
-    alertArea.append(alert);
+  const clearError = () => {
+    setErrorMessage(null);
   };
 
   // shortcut: tope arbitrario para evitar que el navegador se cuelgue
@@ -79,7 +104,7 @@ export const useComicReader = () => {
   // formato legítimo lo necesita.
   const MAX_FILE_SIZE_BYTES = 500 * 1024 * 1024;
 
-  const handleFile = (file: File) => {
+  const handleFile = (file: File, password: string | null = null) => {
     console.log('try to parse ' + file.name);
 
     if (file.size > MAX_FILE_SIZE_BYTES) {
@@ -87,13 +112,19 @@ export const useComicReader = () => {
       return;
     }
 
+    pendingFileRef.current = file;
+
     // Extraer nombre del archivo sin extensión
     const fileName = file.name.replace(/\.(cbr|cbz|zip|rar|pdf)$/i, '');
     setComicName(fileName);
+    comicKeyRef.current = getComicKey(file);
 
     setImages([]);
     setCurrentPanel(0);
     setShowButtons(false);
+    setPasswordRequired(false);
+    setPasswordError(null);
+    setErrorMessage(null);
     setIsLoading(true);
     setLoadingProgress(0);
 
@@ -104,6 +135,7 @@ export const useComicReader = () => {
         .then(({ processPdfFile }) => processPdfFile(file, setLoadingProgress))
         .then((newImages) => {
           setImages(newImages);
+          setCurrentPanel(getSavedPage(comicKeyRef.current!, newImages.length));
           setIsLoading(false);
           setShowButtons(true);
         })
@@ -116,7 +148,7 @@ export const useComicReader = () => {
     }
 
     if (window.archiveOpenFile) {
-      window.archiveOpenFile(file, null, (archive: Archive | null, err: unknown) => {
+      window.archiveOpenFile(file, password, (archive: Archive | null, err: unknown) => {
         if (archive) {
           console.info('Uncompressing ' + archive.archive_type + ' ...');
 
@@ -128,28 +160,60 @@ export const useComicReader = () => {
             .sort((a, b) => a.name.localeCompare(b.name));
           const newImages: string[] = new Array(imageArchive.length);
           let processedCount = 0;
+          let aborted = false;
 
           imageArchive.forEach((entry, index) => {
-            entry.readData((data) => {
-              if (data) {
-                const url = URL.createObjectURL(new Blob([data]));
-                newImages[index] = url;
-                processedCount++;
+            entry.readData((data, entryErr) => {
+              if (aborted) return;
 
-                const progress = Math.floor((processedCount / imageArchive.length) * 100);
-                setLoadingProgress(progress);
-
-                if (processedCount === imageArchive.length) {
-                  setImages(newImages);
+              if (!data) {
+                // Entrada no legible: si es por contraseña (algunos RAR cifran
+                // el contenido pero no los nombres, asi que esto recien se
+                // detecta aca y no al abrir el archivo), pedirla y frenar;
+                // antes este caso quedaba colgado para siempre sin feedback.
+                const message = entryErr instanceof Error ? entryErr.message : String(entryErr);
+                if (/password/i.test(message)) {
+                  aborted = true;
+                  setPasswordRequired(true);
+                  setPasswordError(password ? 'Contraseña incorrecta, probá de nuevo.' : null);
                   setIsLoading(false);
-                  setShowButtons(true);
                 }
+                return;
+              }
+
+              const url = URL.createObjectURL(new Blob([data]));
+              newImages[index] = url;
+              processedCount++;
+
+              const progress = Math.floor((processedCount / imageArchive.length) * 100);
+              setLoadingProgress(progress);
+
+              if (processedCount === imageArchive.length) {
+                setImages(newImages);
+                setCurrentPanel(getSavedPage(comicKeyRef.current!, newImages.length));
+                setIsLoading(false);
+                setShowButtons(true);
               }
             });
           });
         } else {
+          const message = err instanceof Error ? err.message : String(err);
+
+          if (/password/i.test(message)) {
+            setPasswordRequired(true);
+            setPasswordError(password ? 'Contraseña incorrecta, probá de nuevo.' : null);
+            setIsLoading(false);
+            return;
+          }
+
+          if (/encrypted/i.test(message)) {
+            doError('Este archivo está protegido con un método de cifrado que todavía no soportamos (CBZ/ZIP cifrado). Probá con la contraseña solo si es un CBR/RAR.');
+            setIsLoading(false);
+            return;
+          }
+
           console.error(err);
-          doError(err instanceof Error ? err.message : String(err));
+          doError(message);
           setIsLoading(false);
         }
       });
@@ -216,12 +280,27 @@ export const useComicReader = () => {
   };
 
   const closeComic = () => {
+    pendingFileRef.current = null;
     setImages([]);
     setCurrentPanel(0);
     setShowButtons(false);
     setComicName("");
     setIsLoading(false);
     setLoadingProgress(0);
+    setPasswordRequired(false);
+    setPasswordError(null);
+    setErrorMessage(null);
+  };
+
+  const submitPassword = (password: string) => {
+    if (!pendingFileRef.current) return;
+    handleFile(pendingFileRef.current, password);
+  };
+
+  const cancelPassword = () => {
+    pendingFileRef.current = null;
+    setPasswordRequired(false);
+    setPasswordError(null);
   };
 
   const prevPanel = () => {
@@ -253,8 +332,11 @@ export const useComicReader = () => {
     isLoading,
     loadingProgress,
     showButtons,
+    passwordRequired,
+    passwordError,
+    errorMessage,
     fileInputRef,
-    
+
     // Actions
     handleFile,
     handleFilesChange,
@@ -262,6 +344,9 @@ export const useComicReader = () => {
     closeComic,
     prevPanel,
     nextPanel,
-    goToPage
+    goToPage,
+    submitPassword,
+    cancelPassword,
+    clearError
   };
 };

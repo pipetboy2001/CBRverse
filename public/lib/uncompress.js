@@ -197,7 +197,12 @@ function archiveOpenArrayBuffer(file_name, password, array_buffer) {
 				break;
 		}
 	} catch(e) {
-		throw new Error("Failed to open '" + archive_type + "' archive.");
+		// Preservar el motivo real (ej. "Bad password", "Missing password",
+		// "Encrypted zip are not supported") en vez de descartarlo: el codigo
+		// que llama a archiveOpenFile lo necesita para distinguir un archivo
+		// protegido con contraseña de un archivo corrupto o desconocido.
+		let reason = (e && e.message) ? e.message : String(e);
+		throw new Error("Failed to open '" + archive_type + "' archive: " + reason);
 	}
 
 	// Sort the entries by name
