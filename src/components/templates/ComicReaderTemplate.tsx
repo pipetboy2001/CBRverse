@@ -103,6 +103,8 @@ export const ComicReaderTemplate: React.FC<ComicReaderTemplateProps> = ({
             rotation={rotation}
             onPrevious={onPrevious}
             onNext={onNext}
+            onZoomIn={onZoomIn}
+            onZoomOut={onZoomOut}
           />
         </div>
       </div>

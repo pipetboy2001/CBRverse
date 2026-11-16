@@ -589,6 +589,11 @@ body {
   animation: progress-animation 2s linear infinite;
 }
 
+/* Wrapper invisible para los listeners de zoom por rueda/pellizco */
+.zoom-gesture-area {
+  display: contents;
+}
+
 /* Permite desplazamiento horizontal cuando el zoom supera el ancho del contenedor */
 .zoom-scroll-area {
   overflow-x: auto;
