@@ -49,11 +49,11 @@ export const ComicReaderPage: React.FC = () => {
     images,
     currentPanel,
     cascadeMode,
-    readingDirection,
     prevPanel,
     nextPanel,
     goToPage,
-    scrollToPage
+    scrollToPage,
+    readingDirection
   );
 
   // Configurar opciones del menú

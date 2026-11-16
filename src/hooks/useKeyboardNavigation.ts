@@ -5,11 +5,11 @@ export const useKeyboardNavigation = (
   images: string[],
   currentPanel: number,
   cascadeMode: boolean,
-  readingDirection: ReadingDirection,
   onPrevious: () => void,
   onNext: () => void,
   onGoToPage: (page: number) => void,
-  scrollToPage: (page: number) => void
+  scrollToPage: (page: number) => void,
+  readingDirection: ReadingDirection = 'comic'
 ) => {
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
