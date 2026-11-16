@@ -53,52 +53,6 @@ export const useComicReader = () => {
     };
   }, [images]);
 
-  // Initialize external scripts
-  useEffect(() => {
-    let cancelled = false;
-
-    const handleDragOver = (e: DragEvent) => {
-      e.preventDefault();
-      if (e.dataTransfer) {
-        e.dataTransfer.dropEffect = "move";
-      }
-    };
-
-    const handleDrop = (e: DragEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-
-      const files = e.dataTransfer?.files;
-      if (!files || files.length === 0) return;
-      if (files.length > 1) {
-        doError("You may only drop one file.");
-        return;
-      }
-
-      handleFile(files[0]);
-    };
-
-    const setupDragAndDrop = () => {
-      document.removeEventListener("dragover", handleDragOver);
-      document.removeEventListener("drop", handleDrop);
-      document.addEventListener("dragover", handleDragOver);
-      document.addEventListener("drop", handleDrop);
-    };
-
-    ensureArchiveLibsLoaded()
-      .then(() => {
-        if (!cancelled) setupDragAndDrop();
-      })
-      .catch((error) => console.error('Error loading external scripts:', error));
-
-    // Cleanup function to remove event listeners
-    return () => {
-      cancelled = true;
-      document.removeEventListener("dragover", handleDragOver);
-      document.removeEventListener("drop", handleDrop);
-    };
-  }, []);
-
   const doError = (message: string) => {
     const alertArea = document.getElementById('alertArea');
     if (!alertArea) return;
@@ -204,6 +158,52 @@ export const useComicReader = () => {
       setIsLoading(false);
     }
   };
+
+  // Initialize external scripts
+  useEffect(() => {
+    let cancelled = false;
+
+    const handleDragOver = (e: DragEvent) => {
+      e.preventDefault();
+      if (e.dataTransfer) {
+        e.dataTransfer.dropEffect = "move";
+      }
+    };
+
+    const handleDrop = (e: DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const files = e.dataTransfer?.files;
+      if (!files || files.length === 0) return;
+      if (files.length > 1) {
+        doError("You may only drop one file.");
+        return;
+      }
+
+      handleFile(files[0]);
+    };
+
+    const setupDragAndDrop = () => {
+      document.removeEventListener("dragover", handleDragOver);
+      document.removeEventListener("drop", handleDrop);
+      document.addEventListener("dragover", handleDragOver);
+      document.addEventListener("drop", handleDrop);
+    };
+
+    ensureArchiveLibsLoaded()
+      .then(() => {
+        if (!cancelled) setupDragAndDrop();
+      })
+      .catch((error) => console.error('Error loading external scripts:', error));
+
+    // Cleanup function to remove event listeners
+    return () => {
+      cancelled = true;
+      document.removeEventListener("dragover", handleDragOver);
+      document.removeEventListener("drop", handleDrop);
+    };
+  }, []);
 
   const handleFilesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
