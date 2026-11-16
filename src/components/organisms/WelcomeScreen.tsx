@@ -1,16 +1,21 @@
 import React from 'react';
 import { Button, FileInput } from '../atoms';
+import { ErrorAlert } from '../molecules';
 
 interface WelcomeScreenProps {
   fileInputRef: React.RefObject<HTMLInputElement>;
   onFilesChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onTriggerFileInput: () => void;
+  errorMessage: string | null;
+  onDismissError: () => void;
 }
 
 export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   fileInputRef,
   onFilesChange,
-  onTriggerFileInput
+  onTriggerFileInput,
+  errorMessage,
+  onDismissError
 }) => {
   return (
     <div className="welcome-screen">
@@ -24,7 +29,13 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
         <p className="text-shadow-sm" style={{ fontSize: '1rem', marginBottom: '1.5rem', opacity: 0.9 }}>
           Arrastra tu cómic o selecciona un archivo para empezar
         </p>
-        
+
+        {errorMessage && (
+          <div style={{ marginBottom: '1rem' }}>
+            <ErrorAlert message={errorMessage} onDismiss={onDismissError} />
+          </div>
+        )}
+
         <div className="upload-section">
           <div style={{ fontSize: '2rem', marginBottom: '1rem', opacity: 0.8 }}>
             ⬆️

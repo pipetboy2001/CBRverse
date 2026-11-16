@@ -1,6 +1,6 @@
 import React from 'react';
 import { Header, ComicViewer, Footer } from '../organisms';
-import { LoadingModal, InfoAlert } from '../molecules';
+import { LoadingModal, InfoAlert, ErrorAlert } from '../molecules';
 import { ConfigOption } from '../../types';
 
 interface ComicReaderTemplateProps {
@@ -27,6 +27,10 @@ interface ComicReaderTemplateProps {
   onCloseComic: () => void;
   onPrevious: () => void;
   onNext: () => void;
+
+  // Errores
+  errorMessage: string | null;
+  onDismissError: () => void;
 }
 
 export const ComicReaderTemplate: React.FC<ComicReaderTemplateProps> = ({
@@ -43,7 +47,9 @@ export const ComicReaderTemplate: React.FC<ComicReaderTemplateProps> = ({
   onCloseConfigMenu,
   onCloseComic,
   onPrevious,
-  onNext
+  onNext,
+  errorMessage,
+  onDismissError
 }) => {
   return (
     <div className="min-h-screen bg-gradient-main">
@@ -69,7 +75,7 @@ export const ComicReaderTemplate: React.FC<ComicReaderTemplateProps> = ({
           )}
 
           <output id="list"></output>
-          <div id="alertArea"></div>
+          <ErrorAlert message={errorMessage} onDismiss={onDismissError} />
 
           {/* Loading Modal */}
           <LoadingModal 
