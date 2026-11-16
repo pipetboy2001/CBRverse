@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 export const useViewMode = () => {
   const [cascadeMode, setCascadeMode] = useState<boolean>(false);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
+  const [rotation, setRotation] = useState<0 | 90 | 180 | 270>(0);
 
   // Detectar cambios en el modo pantalla completa
   useEffect(() => {
@@ -43,11 +44,17 @@ export const useViewMode = () => {
     }
   };
 
+  const rotateClockwise = () => {
+    setRotation((prev) => ((prev + 90) % 360) as 0 | 90 | 180 | 270);
+  };
+
   return {
     cascadeMode,
     isFullscreen,
+    rotation,
     toggleCascadeMode,
     toggleFullscreen,
-    scrollToPage
+    scrollToPage,
+    rotateClockwise
   };
 };
