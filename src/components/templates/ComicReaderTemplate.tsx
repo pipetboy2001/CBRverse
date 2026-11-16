@@ -1,7 +1,7 @@
 import React from 'react';
-import { Header, ComicViewer, Footer } from '../organisms';
+import { Header, ComicViewer } from '../organisms';
 import { LoadingModal, InfoAlert } from '../molecules';
-import { ConfigOption } from '../../types';
+import { ConfigOption, ReadingDirection } from '../../types';
 
 interface ComicReaderTemplateProps {
   // Comic state
@@ -15,6 +15,7 @@ interface ComicReaderTemplateProps {
   // View mode
   cascadeMode: boolean;
   zoomLevel: number;
+  readingDirection: ReadingDirection;
 
   // UI state
   showConfigMenu: boolean;
@@ -41,6 +42,7 @@ export const ComicReaderTemplate: React.FC<ComicReaderTemplateProps> = ({
   showButtons,
   cascadeMode,
   zoomLevel,
+  readingDirection,
   showConfigMenu,
   configOptions,
   onToggleConfigMenu,
@@ -70,7 +72,7 @@ export const ComicReaderTemplate: React.FC<ComicReaderTemplateProps> = ({
       />
 
       {/* Contenido principal */}
-      <div className={`pt-20 ${cascadeMode ? '' : 'pb-footer'}`}>
+      <div className="pt-20">
         <div className="glass-container container mx-auto" style={{ maxWidth: '1200px' }}>
           {/* Alertas informativas */}
           {showButtons && (
@@ -81,7 +83,7 @@ export const ComicReaderTemplate: React.FC<ComicReaderTemplateProps> = ({
           <div id="alertArea"></div>
 
           {/* Loading Modal */}
-          <LoadingModal 
+          <LoadingModal
             isVisible={isLoading}
             progress={loadingProgress}
           />
@@ -92,19 +94,12 @@ export const ComicReaderTemplate: React.FC<ComicReaderTemplateProps> = ({
             currentPanel={currentPanel}
             cascadeMode={cascadeMode}
             zoomLevel={zoomLevel}
+            readingDirection={readingDirection}
+            onPrevious={onPrevious}
+            onNext={onNext}
           />
         </div>
       </div>
-
-      {/* Footer */}
-      <Footer 
-        currentPanel={currentPanel}
-        totalPanels={images.length}
-        onPrevious={onPrevious}
-        onNext={onNext}
-        cascadeMode={cascadeMode}
-        showButtons={showButtons}
-      />
     </div>
   );
 };

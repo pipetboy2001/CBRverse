@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import type { ReadingDirection } from '../types';
 
 export const ZOOM_MIN = 50;
 export const ZOOM_MAX = 250;
@@ -9,6 +10,7 @@ export const useViewMode = () => {
   const [cascadeMode, setCascadeMode] = useState<boolean>(false);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [zoomLevel, setZoomLevel] = useState<number>(ZOOM_DEFAULT);
+  const [readingDirection, setReadingDirection] = useState<ReadingDirection>('comic');
 
   // Detectar cambios en el modo pantalla completa
   useEffect(() => {
@@ -61,15 +63,21 @@ export const useViewMode = () => {
     setZoomLevel(ZOOM_DEFAULT);
   };
 
+  const toggleReadingDirection = () => {
+    setReadingDirection((prev) => (prev === 'comic' ? 'manga' : 'comic'));
+  };
+
   return {
     cascadeMode,
     isFullscreen,
     zoomLevel,
+    readingDirection,
     toggleCascadeMode,
     toggleFullscreen,
     scrollToPage,
     zoomIn,
     zoomOut,
-    resetZoom
+    resetZoom,
+    toggleReadingDirection
   };
 };

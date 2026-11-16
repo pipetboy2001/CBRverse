@@ -552,6 +552,55 @@ body {
   overflow-x: auto;
 }
 
+/* Tap-to-read: mitades invisibles sobre la imagen para avanzar/retroceder */
+.tap-read-area {
+  position: relative;
+}
+
+.tap-zone {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  color: rgba(255, 255, 255, 0);
+  font-size: 32px;
+  transition: color 0.2s ease, background 0.2s ease;
+  z-index: 5;
+}
+
+.tap-zone-left {
+  left: 0;
+  justify-content: flex-start;
+  padding-left: 16px;
+}
+
+.tap-zone-right {
+  right: 0;
+  justify-content: flex-end;
+  padding-right: 16px;
+}
+
+.tap-zone-left:hover:not(:disabled) {
+  background: linear-gradient(to right, rgba(0, 0, 0, 0.25), transparent);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.tap-zone-right:hover:not(:disabled) {
+  background: linear-gradient(to left, rgba(0, 0, 0, 0.25), transparent);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.tap-zone:disabled {
+  cursor: default;
+}
+
 /* Imagen del cómic - Colores naturales con marco sutil */
 .comic-image {
   width: 100%;
@@ -644,31 +693,6 @@ body {
     margin: 0 1rem;
   }
   
-  .footer-controls {
-    flex-direction: row !important;
-    gap: 5px !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-  }
-  
-  .footer-page-counter {
-    order: 0 !important;
-    margin-bottom: 0 !important;
-    font-size: 12px !important;
-    padding: 6px 10px !important;
-    flex-shrink: 0 !important;
-  }
-  
-  .footer-btn {
-    padding: 6px 12px !important;
-    font-size: 12px !important;
-    flex-shrink: 0 !important;
-  }
-
-  .footer-btn i {
-    font-size: 10px !important;
-  }
-
   /* Navbar responsivo */
   .navbar-content {
     padding: 0 10px;
@@ -708,21 +732,6 @@ body {
     font-size: 1.5rem;
   }
   
-  .footer-content {
-    margin: 0 5px;
-    padding: 8px;
-  }
-  
-  .footer-page-counter {
-    font-size: 10px !important;
-    padding: 4px 8px !important;
-  }
-
-  .footer-btn {
-    padding: 4px 8px !important;
-    font-size: 10px !important;
-  }
-
   /* Navbar muy pequeño */
   .navbar-content {
     padding: 0 8px;
@@ -754,82 +763,6 @@ body {
   .page-info {
     font-size: 10px;
   }
-}
-
-/* Footer fijo - Negro profesional */
-.footer-fixed {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: var(--gradient-navbar);
-  backdrop-filter: blur(10px);
-  border: none;
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
-  z-index: 1000;
-  padding: 8px 0;
-  border-top: 1px solid rgba(60, 60, 60, 0.3);
-}
-
-.footer-content {
-  background: rgba(40, 40, 40, 0.8);
-  border-radius: 15px;
-  padding: 10px;
-  margin: 0 15px;
-  backdrop-filter: blur(5px);
-  border: 1px solid rgba(80, 80, 80, 0.3);
-}
-
-.footer-controls {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.footer-page-counter {
-  background: rgba(60, 60, 60, 0.8);
-  color: #e0e0e0;
-  padding: 8px 16px;
-  border-radius: 15px;
-  font-weight: bold;
-  font-size: 14px;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(100, 100, 100, 0.3);
-}
-
-.footer-btn {
-  background: rgba(60, 60, 60, 0.8) !important;
-  border: 1px solid rgba(100, 100, 100, 0.3) !important;
-  color: #e0e0e0 !important;
-  padding: 8px 18px !important;
-  border-radius: 15px !important;
-  font-weight: 600 !important;
-  transition: all 0.3s ease !important;
-  backdrop-filter: blur(5px) !important;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5) !important;
-}
-
-.footer-btn:hover:not(:disabled) {
-  background: rgba(80, 80, 80, 0.9) !important;
-  transform: translateY(-2px) !important;
-  box-shadow: 0 6px 20px rgba(60, 60, 60, 0.4) !important;
-  border-color: rgba(120, 120, 120, 0.5) !important;
-}
-
-.footer-btn:disabled {
-  background: rgba(40, 40, 40, 0.6) !important;
-  color: rgba(140, 140, 140, 0.6) !important;
-  cursor: not-allowed !important;
-  transform: none !important;
-  box-shadow: none !important;
-  border-color: rgba(60, 60, 60, 0.3) !important;
-}
-
-/* Espaciado para el footer */
-.pb-footer {
-  padding-bottom: 80px;
 }
 
 /* Modo cascada - todas las imágenes en secuencia */

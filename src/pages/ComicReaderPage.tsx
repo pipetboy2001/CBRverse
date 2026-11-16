@@ -29,11 +29,13 @@ export const ComicReaderPage: React.FC = () => {
     cascadeMode,
     isFullscreen,
     zoomLevel,
+    readingDirection,
     toggleCascadeMode,
     toggleFullscreen,
     scrollToPage,
     zoomIn,
-    zoomOut
+    zoomOut,
+    toggleReadingDirection
   } = useViewMode();
 
   const {
@@ -47,6 +49,7 @@ export const ComicReaderPage: React.FC = () => {
     images,
     currentPanel,
     cascadeMode,
+    readingDirection,
     prevPanel,
     nextPanel,
     goToPage,
@@ -78,6 +81,19 @@ export const ComicReaderPage: React.FC = () => {
       status: isFullscreen ? 'Salir' : 'Activar',
       action: () => {
         toggleFullscreen();
+        closeConfigMenu();
+      }
+    },
+    {
+      id: 'reading-direction',
+      icon: readingDirection === 'manga' ? 'arrow-left-circle' : 'arrow-right-circle',
+      title: readingDirection === 'manga' ? 'Modo Manga' : 'Modo Comic',
+      description: readingDirection === 'manga'
+        ? 'Tocar la izquierda avanza (lectura derecha a izquierda)'
+        : 'Tocar la derecha avanza (lectura izquierda a derecha)',
+      status: 'Cambiar',
+      action: () => {
+        toggleReadingDirection();
         closeConfigMenu();
       }
     },
@@ -114,6 +130,7 @@ export const ComicReaderPage: React.FC = () => {
       showButtons={showButtons}
       cascadeMode={cascadeMode}
       zoomLevel={zoomLevel}
+      readingDirection={readingDirection}
       showConfigMenu={showConfigMenu}
       configOptions={configOptions}
       onToggleConfigMenu={toggleConfigMenu}

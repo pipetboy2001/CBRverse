@@ -9,10 +9,13 @@ export interface ComicState {
   showButtons: boolean;
 }
 
+export type ReadingDirection = 'comic' | 'manga';
+
 export interface ViewMode {
   cascadeMode: boolean;
   isFullscreen: boolean;
   zoomLevel: number;
+  readingDirection: ReadingDirection;
 }
 
 export interface UIState {

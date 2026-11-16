@@ -1,9 +1,11 @@
 import { useEffect } from 'react';
+import type { ReadingDirection } from '../types';
 
 export const useKeyboardNavigation = (
   images: string[],
   currentPanel: number,
   cascadeMode: boolean,
+  readingDirection: ReadingDirection,
   onPrevious: () => void,
   onNext: () => void,
   onGoToPage: (page: number) => void,
@@ -50,19 +52,20 @@ export const useKeyboardNavigation = (
           }
         }
       } else {
-        // Modo página individual original
+        // Modo página individual: en manga, izquierda avanza y derecha retrocede
+        const manga = readingDirection === 'manga';
         switch(e.key) {
           case 'ArrowLeft':
           case 'a':
           case 'A':
             e.preventDefault();
-            onPrevious();
+            if (manga) onNext(); else onPrevious();
             break;
           case 'ArrowRight':
           case 'd':
           case 'D':
             e.preventDefault();
-            onNext();
+            if (manga) onPrevious(); else onNext();
             break;
           case 'Home':
             e.preventDefault();
@@ -78,5 +81,5 @@ export const useKeyboardNavigation = (
 
     document.addEventListener('keydown', handleKeyPress);
     return () => document.removeEventListener('keydown', handleKeyPress);
-  }, [currentPanel, images, cascadeMode, onPrevious, onNext, onGoToPage, scrollToPage]);
+  }, [currentPanel, images, cascadeMode, readingDirection, onPrevious, onNext, onGoToPage, scrollToPage]);
 };
