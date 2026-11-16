@@ -291,7 +291,7 @@ body {
 }
 
 .navbar-zoom-level {
-  color: #e0e0e0;
+  color: var(--color-text-primary);
   font-size: 13px;
   font-weight: 600;
   min-width: 42px;

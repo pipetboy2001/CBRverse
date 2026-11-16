@@ -12,14 +12,13 @@ export const InfoAlert: React.FC<InfoAlertProps> = ({
 }) => {
   return (
     <div className={`alert alert-info d-flex align-items-center justify-content-center text-center ${className}`} style={{
-      background: 'rgba(60, 60, 60, 0.6)',
-      borderColor: 'rgba(100, 100, 100, 0.3)',
-      color: '#c0c0c0',
+      background: 'var(--color-surface-btn)',
+      color: 'var(--color-text-secondary)',
       borderRadius: '10px',
       padding: '15px',
       margin: '10px 0',
       fontSize: '14px',
-      border: '1px solid rgba(100, 100, 100, 0.3)'
+      border: '1px solid var(--color-border)'
     }}>
       <Icon name={cascadeMode ? "layers" : "keyboard"} className="me-2" />
       <strong>
