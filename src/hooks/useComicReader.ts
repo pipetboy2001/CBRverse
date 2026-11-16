@@ -199,6 +199,9 @@ export const useComicReader = () => {
           setIsLoading(false);
         }
       });
+    } else {
+      doError('No se pudo cargar el lector de archivos comprimidos. Recargá la página e intentá de nuevo.');
+      setIsLoading(false);
     }
   };
 

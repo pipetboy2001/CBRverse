@@ -86,6 +86,21 @@ describe('useComicReader.handleFile', () => {
     expect(result.current.isLoading).toBe(false);
   });
 
+  it('no se queda cargando para siempre si el lector de archivos no llegó a cargar (issue #31)', async () => {
+    delete window.archiveOpenFile;
+
+    const { result } = renderHook(() => useComicReader());
+
+    act(() => {
+      result.current.handleFile(new File(['x'], 'mi-comic.cbz'));
+    });
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(result.current.images).toHaveLength(0);
+    expect(result.current.showButtons).toBe(false);
+  });
+
   it('muestra un error y no se queda cargando si el archivo no es un cómic válido', async () => {
     window.archiveOpenFile = (_file, _password, cb) => {
       cb(null, new Error('The archive type is unknown'));
