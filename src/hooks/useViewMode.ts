@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import $ from 'jquery';
 
 export const useViewMode = () => {
   const [cascadeMode, setCascadeMode] = useState<boolean>(false);
@@ -16,18 +15,7 @@ export const useViewMode = () => {
   }, []);
 
   const toggleCascadeMode = () => {
-    const newCascadeMode = !cascadeMode;
-    setCascadeMode(newCascadeMode);
-    
-    // Si estamos volviendo al modo página, asegurar que la imagen se muestre
-    if (!newCascadeMode) {
-      setTimeout(() => {
-        const currentSrc = $("#comicImg").attr("src");
-        if (currentSrc) {
-          $("#comicImg").attr("src", currentSrc);
-        }
-      }, 100);
-    }
+    setCascadeMode((prev) => !prev);
   };
 
   const toggleFullscreen = () => {

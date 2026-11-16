@@ -46,11 +46,23 @@ export interface ConfigOption {
   disabled?: boolean;
 }
 
+// Entrada de un archivo CBR/CBZ, tal como la expone public/lib/uncompress.js
+export interface ArchiveEntry {
+  name: string;
+  is_file: boolean;
+  readData: (cb: (data: ArrayBuffer | null, err: unknown) => void) => void;
+}
+
+export interface Archive {
+  archive_type: string;
+  entries: ArchiveEntry[];
+}
+
 // Window extensions for external libraries
 declare global {
   interface Window {
     loadArchiveFormats?: (formats: string[], callback: () => void) => void;
-    archiveOpenFile?: (file: File, password: string | null, callback: (archive: any, err: any) => void) => void;
-    JSZip?: any;
+    archiveOpenFile?: (file: File, password: string | null, callback: (archive: Archive | null, err: unknown) => void) => void;
+    JSZip?: unknown;
   }
 }

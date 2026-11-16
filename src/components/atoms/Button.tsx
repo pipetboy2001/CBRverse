@@ -7,6 +7,9 @@ interface ButtonProps {
   variant?: 'primary' | 'secondary' | 'navbar' | 'footer';
   className?: string;
   title?: string;
+  'aria-expanded'?: boolean;
+  'aria-haspopup'?: React.AriaAttributes['aria-haspopup'];
+  'aria-label'?: string;
 }
 
 export const Button: React.FC<ButtonProps> = ({
@@ -15,30 +18,35 @@ export const Button: React.FC<ButtonProps> = ({
   disabled = false,
   variant = 'primary',
   className = '',
-  title
+  title,
+  'aria-expanded': ariaExpanded,
+  'aria-haspopup': ariaHaspopup,
+  'aria-label': ariaLabel
 }) => {
   const getButtonClasses = () => {
-    const baseClasses = 'transition-all duration-300 ease-in-out focus:outline-none';
-    
     switch (variant) {
       case 'primary':
-        return `btn btn-primary ${baseClasses}`;
+        return 'btn btn-primary';
       case 'navbar':
-        return `navbar-config-btn ${baseClasses}`;
+        return 'navbar-config-btn';
       case 'footer':
-        return `btn footer-btn ${baseClasses}`;
+        return 'btn footer-btn';
       case 'secondary':
       default:
-        return `btn btn-secondary ${baseClasses}`;
+        return 'btn btn-secondary';
     }
   };
 
   return (
     <button
+      type="button"
       className={`${getButtonClasses()} ${className}`}
       onClick={onClick}
       disabled={disabled}
       title={title}
+      aria-expanded={ariaExpanded}
+      aria-haspopup={ariaHaspopup}
+      aria-label={ariaLabel}
     >
       {children}
     </button>

@@ -1,5 +1,40 @@
 import { useState, useEffect, useRef } from 'react';
-import $ from 'jquery';
+import type { Archive } from '../types';
+
+const loadScript = (src: string): Promise<void> =>
+  new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = src;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error(`Failed to load ${src}`));
+    document.head.appendChild(script);
+  });
+
+// Promesa compartida a nivel de módulo: window.loadArchiveFormats/jszip/libunrar
+// son estado global de la librería vendored, así que la carga también tiene que
+// coordinarse a nivel global. Sin esto, el doble montaje de React StrictMode en
+// desarrollo dispara este efecto dos veces y la segunda vez nunca llega a
+// llamar setupDragAndDrop (ver issue #26).
+let archiveLibsReady: Promise<void> | null = null;
+
+const ensureArchiveLibsLoaded = (): Promise<void> => {
+  if (!archiveLibsReady) {
+    archiveLibsReady = (async () => {
+      if (!window.JSZip) {
+        await loadScript('/lib/jszip.js');
+      }
+      if (!window.loadArchiveFormats) {
+        await loadScript('/lib/uncompress.js');
+      }
+      if (window.loadArchiveFormats) {
+        await new Promise<void>((resolve) => {
+          window.loadArchiveFormats!(['rar', 'zip'], resolve);
+        });
+      }
+    })();
+  }
+  return archiveLibsReady;
+};
 
 export const useComicReader = () => {
   const [images, setImages] = useState<string[]>([]);
@@ -11,117 +46,95 @@ export const useComicReader = () => {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Libera las blob URLs de las páginas cada vez que se reemplazan (nuevo cómic, cierre, o unmount)
+  useEffect(() => {
+    return () => {
+      images.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, [images]);
+
   // Initialize external scripts
   useEffect(() => {
-    const loadExternalScripts = async () => {
-      try {
-        // Check if scripts are already loaded to avoid duplicates
-        if (window.JSZip && window.loadArchiveFormats) {
-          setupDragAndDrop();
-          return;
-        }
+    let cancelled = false;
 
-        if (!window.JSZip) {
-          await new Promise((resolve, reject) => {
-            // Check if script already exists
-            const existingScript = document.querySelector('script[src="/lib/jszip.js"]');
-            if (existingScript) {
-              resolve(undefined);
-              return;
-            }
-
-            const script = document.createElement('script');
-            script.src = '/lib/jszip.js';
-            script.onload = () => resolve(undefined);
-            script.onerror = () => reject(new Error('Failed to load jszip.js'));
-            document.head.appendChild(script);
-          });
-        }
-
-        if (!window.loadArchiveFormats) {
-          await new Promise((resolve, reject) => {
-            // Check if script already exists
-            const existingScript = document.querySelector('script[src="/lib/uncompress.js"]');
-            if (existingScript) {
-              resolve(undefined);
-              return;
-            }
-
-            const script = document.createElement('script');
-            script.src = '/lib/uncompress.js';
-            script.onload = () => resolve(undefined);
-            script.onerror = () => reject(new Error('Failed to load uncompress.js'));
-            document.head.appendChild(script);
-          });
-        }
-
-        if (window.loadArchiveFormats) {
-          window.loadArchiveFormats(['rar', 'zip'], () => {
-            console.log('Archive formats loaded');
-            setupDragAndDrop();
-          });
-        }
-      } catch (error) {
-        console.error('Error loading external scripts:', error);
-      }
-    };
-
-    loadExternalScripts();
-
-    // Cleanup function to remove event listeners
-    return () => {
-      const $document = $(document);
-      $document.off("dragover.cbrverse drop.cbrverse");
-    };
-  }, []);
-
-  const setupDragAndDrop = () => {
-    const $document = $(document);
-    
-    // Remove any existing handlers first
-    $document.off("dragover.cbrverse drop.cbrverse");
-    
-    $document.on("dragover.cbrverse", (e) => {
+    const handleDragOver = (e: DragEvent) => {
       e.preventDefault();
-      const dragEvent = e.originalEvent as DragEvent;
-      if (dragEvent && dragEvent.dataTransfer) {
-        dragEvent.dataTransfer.dropEffect = "move";
+      if (e.dataTransfer) {
+        e.dataTransfer.dropEffect = "move";
       }
-    });
+    };
 
-    $document.on("drop.cbrverse", (e) => {
+    const handleDrop = (e: DragEvent) => {
       e.preventDefault();
       e.stopPropagation();
 
-      const dragEvent = e.originalEvent as DragEvent;
-      if (!dragEvent?.dataTransfer?.files) return;
-      const files = dragEvent.dataTransfer.files;
-      
-      if (files.length === 0) return;
+      const files = e.dataTransfer?.files;
+      if (!files || files.length === 0) return;
       if (files.length > 1) {
         doError("You may only drop one file.");
         return;
       }
-      
+
       handleFile(files[0]);
-    });
-  };
+    };
+
+    const setupDragAndDrop = () => {
+      document.removeEventListener("dragover", handleDragOver);
+      document.removeEventListener("drop", handleDrop);
+      document.addEventListener("dragover", handleDragOver);
+      document.addEventListener("drop", handleDrop);
+    };
+
+    ensureArchiveLibsLoaded()
+      .then(() => {
+        if (!cancelled) setupDragAndDrop();
+      })
+      .catch((error) => console.error('Error loading external scripts:', error));
+
+    // Cleanup function to remove event listeners
+    return () => {
+      cancelled = true;
+      document.removeEventListener("dragover", handleDragOver);
+      document.removeEventListener("drop", handleDrop);
+    };
+  }, []);
 
   const doError = (message: string) => {
-    const errorHtml = `
-      <div class='alert alert-block alert-error'>
-        <button class="close" data-dismiss="alert">&times;</button>
-        <p>${message}</p>
-      </div>
-    `;
-    $("#alertArea").html(errorHtml);
+    const alertArea = document.getElementById('alertArea');
+    if (!alertArea) return;
+    alertArea.replaceChildren();
+
+    const alert = document.createElement('div');
+    alert.className = 'alert alert-block alert-error';
+    alert.setAttribute('role', 'alert');
+
+    const closeButton = document.createElement('button');
+    closeButton.className = 'close';
+    closeButton.textContent = '×';
+    closeButton.onclick = () => alert.remove();
+
+    const text = document.createElement('p');
+    text.textContent = message;
+
+    alert.append(closeButton, text);
+    alertArea.append(alert);
   };
+
+  // shortcut: tope arbitrario para evitar que el navegador se cuelgue
+  // decodificando un archivo gigante en el hilo principal; subir si algún
+  // formato legítimo lo necesita.
+  const MAX_FILE_SIZE_BYTES = 500 * 1024 * 1024;
 
   const handleFile = (file: File) => {
     console.log('try to parse ' + file.name);
 
+    if (file.size > MAX_FILE_SIZE_BYTES) {
+      doError(`El archivo es demasiado grande (máximo ${MAX_FILE_SIZE_BYTES / (1024 * 1024)}MB).`);
+      return;
+    }
+
     // Extraer nombre del archivo sin extensión
-    const fileName = file.name.replace(/\.(cbr|cbz|zip|rar)$/i, '');
+    const fileName = file.name.replace(/\.(cbr|cbz|zip|rar|pdf)$/i, '');
     setComicName(fileName);
 
     setImages([]);
@@ -130,22 +143,43 @@ export const useComicReader = () => {
     setIsLoading(true);
     setLoadingProgress(0);
 
-    $("#comicImg").attr("src", "");
+    if (/\.pdf$/i.test(file.name)) {
+      // pdfjs-dist es pesado (~1.3MB con su worker); se carga solo cuando
+      // se abre un PDF, no en el bundle principal.
+      import('./pdfProcessor')
+        .then(({ processPdfFile }) => processPdfFile(file, setLoadingProgress))
+        .then((newImages) => {
+          setImages(newImages);
+          setIsLoading(false);
+          setShowButtons(true);
+        })
+        .catch((err: Error) => {
+          console.error(err);
+          doError(err.message);
+          setIsLoading(false);
+        });
+      return;
+    }
 
     if (window.archiveOpenFile) {
-      window.archiveOpenFile(file, null, (archive: any, err: any) => {
+      window.archiveOpenFile(file, null, (archive: Archive | null, err: unknown) => {
         if (archive) {
           console.info('Uncompressing ' + archive.archive_type + ' ...');
-          
-          const imageArchive = archive.entries.filter((e: any) => e.is_file);
-          const newImages: string[] = [];
+
+          // Orden alfabético por nombre: las entradas pueden descomprimirse en
+          // cualquier orden (el tiempo de descompresión varía por entrada), así
+          // que cada resultado se escribe en su índice fijo, no con push().
+          const imageArchive = archive.entries
+            .filter((e) => e.is_file)
+            .sort((a, b) => a.name.localeCompare(b.name));
+          const newImages: string[] = new Array(imageArchive.length);
           let processedCount = 0;
 
-          imageArchive.forEach((entry: any) => {
-            entry.readData((data: ArrayBuffer, _error: any) => {
+          imageArchive.forEach((entry, index) => {
+            entry.readData((data) => {
               if (data) {
                 const url = URL.createObjectURL(new Blob([data]));
-                newImages.push(url);
+                newImages[index] = url;
                 processedCount++;
 
                 const progress = Math.floor((processedCount / imageArchive.length) * 100);
@@ -155,23 +189,20 @@ export const useComicReader = () => {
                   setImages(newImages);
                   setIsLoading(false);
                   setShowButtons(true);
-                  drawPanel(0, newImages);
                 }
               }
             });
           });
         } else {
           console.error(err);
-          doError(err);
+          doError(err instanceof Error ? err.message : String(err));
           setIsLoading(false);
         }
       });
+    } else {
+      doError('No se pudo cargar el lector de archivos comprimidos. Recargá la página e intentá de nuevo.');
+      setIsLoading(false);
     }
-  };
-
-  const drawPanel = (num: number, imageArray: string[] = images) => {
-    setCurrentPanel(num);
-    $("#comicImg").attr("src", imageArray[num]);
   };
 
   const handleFilesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -191,32 +222,26 @@ export const useComicReader = () => {
     setComicName("");
     setIsLoading(false);
     setLoadingProgress(0);
-    $("#comicImg").attr("src", "");
   };
 
   const prevPanel = () => {
     if (currentPanel > 0) {
-      $('html, body').animate({ scrollTop: window.innerHeight * 0.3 }, 400);
-      const newPanel = currentPanel - 1;
-      setCurrentPanel(newPanel);
-      drawPanel(newPanel);
+      window.scrollTo({ top: window.innerHeight * 0.3, behavior: 'smooth' });
+      setCurrentPanel(currentPanel - 1);
     }
   };
 
   const nextPanel = () => {
     if (currentPanel + 1 < images.length) {
-      $('html, body').animate({ scrollTop: window.innerHeight * 0.3 }, 400);
-      const newPanel = currentPanel + 1;
-      setCurrentPanel(newPanel);
-      drawPanel(newPanel);
+      window.scrollTo({ top: window.innerHeight * 0.3, behavior: 'smooth' });
+      setCurrentPanel(currentPanel + 1);
     }
   };
 
   const goToPage = (page: number) => {
     if (page >= 0 && page < images.length) {
-      $('html, body').animate({ scrollTop: window.innerHeight * 0.3 }, 400);
+      window.scrollTo({ top: window.innerHeight * 0.3, behavior: 'smooth' });
       setCurrentPanel(page);
-      drawPanel(page);
     }
   };
 
@@ -237,7 +262,6 @@ export const useComicReader = () => {
     closeComic,
     prevPanel,
     nextPanel,
-    goToPage,
-    drawPanel
+    goToPage
   };
 };
