@@ -1,5 +1,5 @@
 import React from 'react';
-import { WelcomeScreen } from '../components/organisms';
+import { WelcomeScreen, PasswordPrompt } from '../components/organisms';
 import { ComicReaderTemplate } from '../components/templates';
 import { useComicReader } from '../hooks/useComicReader';
 import { useViewMode } from '../hooks/useViewMode';
@@ -17,13 +17,19 @@ export const ComicReaderPage: React.FC = () => {
     isLoading,
     loadingProgress,
     showButtons,
+    passwordRequired,
+    passwordError,
+    errorMessage,
     fileInputRef,
     handleFilesChange,
     triggerFileInput,
     closeComic,
     prevPanel,
     nextPanel,
-    goToPage
+    goToPage,
+    submitPassword,
+    cancelPassword,
+    clearError
   } = useComicReader();
 
   const {
@@ -117,13 +123,27 @@ export const ComicReaderPage: React.FC = () => {
     }
   ];
 
+  // Archivo protegido con contraseña: pedirla antes de mostrar cualquier otra pantalla
+  if (passwordRequired) {
+    return (
+      <PasswordPrompt
+        fileName={comicName}
+        errorMessage={passwordError}
+        onSubmit={submitPassword}
+        onCancel={cancelPassword}
+      />
+    );
+  }
+
   // Pantalla de bienvenida cuando no hay cómics cargados
   if (!showButtons && !isLoading) {
     return (
-      <WelcomeScreen 
+      <WelcomeScreen
         fileInputRef={fileInputRef}
         onFilesChange={handleFilesChange}
         onTriggerFileInput={triggerFileInput}
+        errorMessage={errorMessage}
+        onDismissError={clearError}
       />
     );
   }
@@ -151,6 +171,8 @@ export const ComicReaderPage: React.FC = () => {
       onZoomIn={zoomIn}
       onZoomOut={zoomOut}
       onRotate={rotateClockwise}
+      errorMessage={errorMessage}
+      onDismissError={clearError}
     />
   );
 };

@@ -244,6 +244,12 @@ var openArchive = function(arcData, password, data, cb) {
 	var header = new Module.RARHeaderDataEx();
 	var res = _RARReadHeaderEx(handle, getPointer(header));
 	if (res !== ERAR_SUCCESS) {
+		// Nombres de archivo encriptados sin contraseña (o incorrecta) caen
+		// aca. Antes se perdia el motivo (missing/bad password) devolviendo
+		// null en silencio; reportReadHeaderError lo tira como excepcion para
+		// que uncompress.js lo pueda distinguir de un archivo corrupto.
+		cleanup(handle, data, cb);
+		reportReadHeaderError(res);
 		return null;
 	}
 
