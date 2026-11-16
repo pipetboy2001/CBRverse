@@ -1,6 +1,7 @@
 import React from 'react';
 import { ComicImage, Icon } from '../atoms';
 import type { ReadingDirection } from '../../types';
+import { useZoomGestures } from '../../hooks/useZoomGestures';
 
 interface ComicViewerProps {
   images: string[];
@@ -10,6 +11,8 @@ interface ComicViewerProps {
   readingDirection: ReadingDirection;
   onPrevious: () => void;
   onNext: () => void;
+  onZoomIn: () => void;
+  onZoomOut: () => void;
 }
 
 export const ComicViewer: React.FC<ComicViewerProps> = ({
@@ -19,8 +22,12 @@ export const ComicViewer: React.FC<ComicViewerProps> = ({
   zoomLevel,
   readingDirection,
   onPrevious,
-  onNext
+  onNext,
+  onZoomIn,
+  onZoomOut
 }) => {
+  const gestureRef = useZoomGestures<HTMLDivElement>(onZoomIn, onZoomOut);
+
   if (images.length === 0) return null;
 
   const zoomStyle: React.CSSProperties = {
@@ -38,7 +45,7 @@ export const ComicViewer: React.FC<ComicViewerProps> = ({
   const rightLabel = manga ? 'Página anterior' : 'Página siguiente';
 
   return (
-    <>
+    <div ref={gestureRef} className="zoom-gesture-area">
       {/* Modo página individual */}
       {!cascadeMode && (
         <div className="text-center mb-4 zoom-scroll-area tap-read-area">
@@ -88,6 +95,6 @@ export const ComicViewer: React.FC<ComicViewerProps> = ({
           ))}
         </div>
       )}
-    </>
+    </div>
   );
 };

@@ -97,6 +97,8 @@ export const ComicReaderTemplate: React.FC<ComicReaderTemplateProps> = ({
             readingDirection={readingDirection}
             onPrevious={onPrevious}
             onNext={onNext}
+            onZoomIn={onZoomIn}
+            onZoomOut={onZoomOut}
           />
         </div>
       </div>
