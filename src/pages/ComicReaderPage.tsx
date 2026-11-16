@@ -28,9 +28,11 @@ export const ComicReaderPage: React.FC = () => {
   const {
     cascadeMode,
     isFullscreen,
+    rotation,
     toggleCascadeMode,
     toggleFullscreen,
-    scrollToPage
+    scrollToPage,
+    rotateClockwise
   } = useViewMode();
 
   const {
@@ -110,6 +112,7 @@ export const ComicReaderPage: React.FC = () => {
       loadingProgress={loadingProgress}
       showButtons={showButtons}
       cascadeMode={cascadeMode}
+      rotation={rotation}
       showConfigMenu={showConfigMenu}
       configOptions={configOptions}
       onToggleConfigMenu={toggleConfigMenu}
@@ -117,6 +120,7 @@ export const ComicReaderPage: React.FC = () => {
       onCloseComic={closeComic}
       onPrevious={prevPanel}
       onNext={nextPanel}
+      onRotate={rotateClockwise}
     />
   );
 };

@@ -6,6 +6,7 @@ interface ComicImageProps {
   className?: string;
   loading?: 'lazy' | 'eager';
   id?: string;
+  style?: React.CSSProperties;
 }
 
 export const ComicImage: React.FC<ComicImageProps> = ({
@@ -13,15 +14,17 @@ export const ComicImage: React.FC<ComicImageProps> = ({
   alt,
   className = '',
   loading = 'eager',
-  id
+  id,
+  style
 }) => {
   return (
-    <img 
+    <img
       id={id}
       src={src}
       alt={alt}
       className={`comic-image img-fluid ${className}`}
       loading={loading}
+      style={style}
     />
   );
 };
