@@ -5,6 +5,7 @@ import { useComicReader } from '../hooks/useComicReader';
 import { useViewMode } from '../hooks/useViewMode';
 import { useUIState } from '../hooks/useUIState';
 import { useKeyboardNavigation } from '../hooks/useKeyboardNavigation';
+import { useTheme } from '../hooks/useTheme';
 import { ConfigOption } from '../types';
 
 export const ComicReaderPage: React.FC = () => {
@@ -34,9 +35,11 @@ export const ComicReaderPage: React.FC = () => {
   const {
     cascadeMode,
     isFullscreen,
+    rotation,
     toggleCascadeMode,
     toggleFullscreen,
-    scrollToPage
+    scrollToPage,
+    rotateClockwise
   } = useViewMode();
 
   const {
@@ -44,6 +47,8 @@ export const ComicReaderPage: React.FC = () => {
     toggleConfigMenu,
     closeConfigMenu
   } = useUIState();
+
+  const { theme, toggleTheme } = useTheme();
 
   // Navegación por teclado
   useKeyboardNavigation(
@@ -85,13 +90,17 @@ export const ComicReaderPage: React.FC = () => {
       }
     },
     {
-      id: 'themes',
-      icon: 'palette',
-      title: 'Temas',
-      description: 'Cambiar tema de la aplicación',
-      status: 'Próximamente',
-      disabled: true,
-      action: () => {}
+      id: 'theme',
+      icon: theme === 'dark' ? 'sun' : 'moon-stars',
+      title: theme === 'dark' ? 'Tema Claro' : 'Tema Oscuro',
+      description: theme === 'dark'
+        ? 'Cambiar a un fondo claro'
+        : 'Volver al fondo oscuro',
+      status: 'Cambiar',
+      action: () => {
+        toggleTheme();
+        closeConfigMenu();
+      }
     }
   ];
 
@@ -130,6 +139,7 @@ export const ComicReaderPage: React.FC = () => {
       loadingProgress={loadingProgress}
       showButtons={showButtons}
       cascadeMode={cascadeMode}
+      rotation={rotation}
       showConfigMenu={showConfigMenu}
       configOptions={configOptions}
       onToggleConfigMenu={toggleConfigMenu}
@@ -137,6 +147,7 @@ export const ComicReaderPage: React.FC = () => {
       onCloseComic={closeComic}
       onPrevious={prevPanel}
       onNext={nextPanel}
+      onRotate={rotateClockwise}
       errorMessage={errorMessage}
       onDismissError={clearError}
     />

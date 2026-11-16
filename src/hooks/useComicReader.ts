@@ -36,6 +36,22 @@ const ensureArchiveLibsLoaded = (): Promise<void> => {
   return archiveLibsReady;
 };
 
+// Progreso de lectura por cómic, identificado por nombre+tamaño de archivo
+// (no hay hash de contenido ni biblioteca persistente todavía).
+const PROGRESS_STORAGE_PREFIX = 'cbrverse:lastPage:';
+
+const getComicKey = (file: File) => `${file.name}:${file.size}`;
+
+const getSavedPage = (key: string, totalPages: number): number => {
+  try {
+    const raw = localStorage.getItem(PROGRESS_STORAGE_PREFIX + key);
+    const page = raw ? parseInt(raw, 10) : NaN;
+    return Number.isInteger(page) && page >= 0 && page < totalPages ? page : 0;
+  } catch {
+    return 0;
+  }
+};
+
 export const useComicReader = () => {
   const [images, setImages] = useState<string[]>([]);
   const [currentPanel, setCurrentPanel] = useState<number>(0);
@@ -49,6 +65,17 @@ export const useComicReader = () => {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const pendingFileRef = useRef<File | null>(null);
+  const comicKeyRef = useRef<string | null>(null);
+
+  // Guarda la página actual para retomar en la misma donde se quedó
+  useEffect(() => {
+    if (!comicKeyRef.current || images.length === 0) return;
+    try {
+      localStorage.setItem(PROGRESS_STORAGE_PREFIX + comicKeyRef.current, String(currentPanel));
+    } catch {
+      // localStorage puede no estar disponible (ej. navegación privada); no es crítico
+    }
+  }, [currentPanel, images.length]);
 
   // Libera las blob URLs de las páginas cada vez que se reemplazan (nuevo cómic, cierre, o unmount)
   useEffect(() => {
@@ -136,6 +163,7 @@ export const useComicReader = () => {
     // Extraer nombre del archivo sin extensión
     const fileName = file.name.replace(/\.(cbr|cbz|zip|rar|pdf)$/i, '');
     setComicName(fileName);
+    comicKeyRef.current = getComicKey(file);
 
     setImages([]);
     setCurrentPanel(0);
@@ -153,6 +181,7 @@ export const useComicReader = () => {
         .then(({ processPdfFile }) => processPdfFile(file, setLoadingProgress))
         .then((newImages) => {
           setImages(newImages);
+          setCurrentPanel(getSavedPage(comicKeyRef.current!, newImages.length));
           setIsLoading(false);
           setShowButtons(true);
         })
@@ -207,6 +236,7 @@ export const useComicReader = () => {
 
               if (processedCount === imageArchive.length) {
                 setImages(newImages);
+                setCurrentPanel(getSavedPage(comicKeyRef.current!, newImages.length));
                 setIsLoading(false);
                 setShowButtons(true);
               }

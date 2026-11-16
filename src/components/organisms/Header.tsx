@@ -13,6 +13,7 @@ interface HeaderProps {
   onCloseConfigMenu: () => void;
   onCloseComic: () => void;
   configOptions: ConfigOption[];
+  onRotate: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -24,14 +25,15 @@ export const Header: React.FC<HeaderProps> = ({
   onToggleConfigMenu,
   onCloseConfigMenu,
   onCloseComic,
-  configOptions
+  configOptions,
+  onRotate
 }) => {
   return (
     <nav className="navbar fixed-top navbar-custom">
       <div className="container-fluid">
         <div className="navbar-content">
           {/* Botón cerrar (X) */}
-          <Button 
+          <Button
             variant="navbar"
             onClick={onCloseComic}
             title="Cerrar cómic y seleccionar otro"
@@ -41,15 +43,25 @@ export const Header: React.FC<HeaderProps> = ({
           </Button>
 
           {/* Nombre del cómic */}
-          <NavbarTitle 
+          <NavbarTitle
             comicName={comicName}
             currentPanel={currentPanel}
             totalPanels={totalPanels}
             cascadeMode={cascadeMode}
           />
 
+          {/* Rotar página */}
+          <Button
+            variant="navbar"
+            onClick={onRotate}
+            title="Rotar página 90°"
+            aria-label="Rotar página 90°"
+          >
+            <Icon name="arrow-clockwise" />
+          </Button>
+
           {/* Botón de configuración con menú desplegable */}
-          <ConfigMenu 
+          <ConfigMenu
             isOpen={showConfigMenu}
             onToggle={onToggleConfigMenu}
             onClose={onCloseConfigMenu}

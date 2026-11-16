@@ -12,6 +12,7 @@ export interface ComicState {
 export interface ViewMode {
   cascadeMode: boolean;
   isFullscreen: boolean;
+  rotation: 0 | 90 | 180 | 270;
 }
 
 export interface UIState {

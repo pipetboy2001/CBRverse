@@ -14,19 +14,21 @@ interface ComicReaderTemplateProps {
   
   // View mode
   cascadeMode: boolean;
-  
+  rotation: 0 | 90 | 180 | 270;
+
   // UI state
   showConfigMenu: boolean;
-  
+
   // Config options
   configOptions: ConfigOption[];
-  
+
   // Event handlers
   onToggleConfigMenu: () => void;
   onCloseConfigMenu: () => void;
   onCloseComic: () => void;
   onPrevious: () => void;
   onNext: () => void;
+  onRotate: () => void;
 
   // Errores
   errorMessage: string | null;
@@ -41,6 +43,7 @@ export const ComicReaderTemplate: React.FC<ComicReaderTemplateProps> = ({
   loadingProgress,
   showButtons,
   cascadeMode,
+  rotation,
   showConfigMenu,
   configOptions,
   onToggleConfigMenu,
@@ -48,13 +51,14 @@ export const ComicReaderTemplate: React.FC<ComicReaderTemplateProps> = ({
   onCloseComic,
   onPrevious,
   onNext,
+  onRotate,
   errorMessage,
   onDismissError
 }) => {
   return (
     <div className="min-h-screen bg-gradient-main">
       {/* Header */}
-      <Header 
+      <Header
         comicName={comicName}
         currentPanel={currentPanel}
         totalPanels={images.length}
@@ -64,6 +68,7 @@ export const ComicReaderTemplate: React.FC<ComicReaderTemplateProps> = ({
         onCloseConfigMenu={onCloseConfigMenu}
         onCloseComic={onCloseComic}
         configOptions={configOptions}
+        onRotate={onRotate}
       />
 
       {/* Contenido principal */}
@@ -78,16 +83,17 @@ export const ComicReaderTemplate: React.FC<ComicReaderTemplateProps> = ({
           <ErrorAlert message={errorMessage} onDismiss={onDismissError} />
 
           {/* Loading Modal */}
-          <LoadingModal 
+          <LoadingModal
             isVisible={isLoading}
             progress={loadingProgress}
           />
 
           {/* Comic Viewer */}
-          <ComicViewer 
+          <ComicViewer
             images={images}
             currentPanel={currentPanel}
             cascadeMode={cascadeMode}
+            rotation={rotation}
           />
         </div>
       </div>
